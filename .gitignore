@@ -1,3 +1,6 @@
+#gtest files
+**.tlog
+
 # Compiled Object files
 *.slo
 *.lo
