@@ -12,8 +12,11 @@
 #include "Limes.h"
 #include "BuildingPreview.h"
 #include "RTSGameInstance.h"
-#include "BuildingFactory.h"
+#include "RTSStructureFactory.h"
 
+
+const FName ARTSPlayerEye::s_AxisMouseX{ TEXT("MouseX") };
+const FName ARTSPlayerEye::s_AxisMouseY{ TEXT("MouseY") };
 
 //Public--------------
 
@@ -25,7 +28,9 @@ ARTSPlayerEye::ARTSPlayerEye() :
 	m_CameraMinPitch{ 0 },
 	m_ZoomTargetPitch{ -30 },
 	m_ZoomTargetDist{ 300 },
-	m_bBuildingPreviewWasPlacable{ false }
+	m_bBuildingPreviewWasPlacable{ false },
+	m_CameraState{ this },
+	m_PlacementState{ this }
 {
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("Root")));
 	GetMovementComponent()->SetUpdatedComponent(GetRootComponent());
@@ -49,226 +54,25 @@ ARTSPlayerEye::ARTSPlayerEye() :
 
 	m_pCursorRoot = CreateDefaultSubobject<USceneComponent>(TEXT("CursorRoot"));
 	m_pCursorRoot->SetupAttachment(GetRootComponent());
-
+	
 
 }
 
-void ARTSPlayerEye::NotifyNewBuildingPreview(class ABuildingPreview *pNewPreview)
+void ARTSPlayerEye::NotifyNewBuildingPreview(class ABuildingPreview *pNewPreview, class ARTSStructureFactory *pFactory)
 {
-	StopBuildingPreview();
+	DiscardBuildingPreview();
 	UE_LOG(RTS_StructurePlacement, Log, TEXT("OnNewPreviewBuilding"));
-
+	
 	m_pBuildingPreviewCurrent = pNewPreview;
-	m_InputState = ERTSInputState::Placement;
 	m_pBuildingPreviewCurrent->AttachToComponent(m_pCursorRoot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 
-
-}
-
-//Protected------------------
-
-void ARTSPlayerEye::PostInitializeComponents()
-{
-	Super::PostInitializeComponents();
-	//m_pViewportClient = GetGameInstance()->GetGameViewportClient();
-	//check(m_pViewportClient);
-	//only on begin play
+	m_pCurrentTargetFactory = pFactory;
+	m_PlacementState.HandleInput(EAbstractInputEvent::PlaceBuilding_Start);
 	
 
 }
-
-void ARTSPlayerEye::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	m_pCameraSpringArm->TargetArmLength = FMath::FInterpTo(m_pCameraSpringArm->TargetArmLength, m_aZoomNodes[m_ZoomIndex].m_Distance, DeltaTime, 5);
-
-	UpdateCursorRoot();
-
-}
-
-void ARTSPlayerEye::BeginPlay()
-{
-	Super::BeginPlay();
-
-
-}
-
 
 #pragma region Input
-void ARTSPlayerEye::SetupPlayerInputComponent(UInputComponent *InputComponent)
-{
-	//Super::SetupPlayerInputComponent(InputComponent);
-
-	InputComponent->BindAxis(TEXT("MouseX"), this, &ARTSPlayerEye::InputAddX);
-	InputComponent->BindAxis(TEXT("MouseY"), this, &ARTSPlayerEye::InputAddY);
-
-	InputComponent->BindAxis(TEXT("MoveX"), this, &ARTSPlayerEye::AddRightMovement);
-	InputComponent->BindAxis(TEXT("MoveY"), this, &ARTSPlayerEye::AddForwardMovement);
-
-	InputComponent->BindAxis(TEXT("RotateCamera"), this, &ARTSPlayerEye::AddCameraYaw);
-
-	InputComponent->BindAction(TEXT("Select"), IE_Pressed, this, &ARTSPlayerEye::ActionSelectStart);
-	InputComponent->BindAction(TEXT("Select"), IE_Released, this, &ARTSPlayerEye::ActionSelectEnd);
-
-	InputComponent->BindAction(TEXT("ContextAction"), IE_Pressed, this, &ARTSPlayerEye::ActionContextStart);
-
-	InputComponent->BindAction(TEXT("SeamlessRotate"), IE_Pressed, this, &ARTSPlayerEye::EnterSeamlessRotation);
-	InputComponent->BindAction(TEXT("SeamlessRotate"), IE_Released, this, &ARTSPlayerEye::LeaveSeamlessRotation);
-	
-	InputComponent->BindAction(TEXT("ZoomOut"), IE_Pressed, this, &ARTSPlayerEye::ZoomOut);
-	InputComponent->BindAction(TEXT("ZoomIn"), IE_Pressed, this, &ARTSPlayerEye::ZoomIn);
-
-}
-
-void ARTSPlayerEye::InputAddX(const float AxisValue)
-{
-	if (FMath::IsNearlyZero(AxisValue))
-	{
-		return;
-
-	}
-
-	switch (m_InputState)
-	{
-	case ERTSInputState::CameraMouseShuffle:
-		AddRightMovement(AxisValue); 
-		break;
-	case ERTSInputState::CameraMouseTurn:
-		if (auto *pController = Cast<ARTSPlayerController>(GetController()))
-		{
-			pController->SetMouseLocation(m_SeamlessRotationPrePos.X, m_SeamlessRotationPrePos.Y);
-
-		}
-		AddCameraYaw(AxisValue);
-		break;
-	case ERTSInputState::PlacementCameraMouseTurn:
-		if (auto *pController = Cast<ARTSPlayerController>(GetController()))
-		{
-			pController->SetMouseLocation(m_SeamlessRotationPrePos.X, m_SeamlessRotationPrePos.Y);
-
-		}
-		AddCameraYaw(AxisValue);
-		break;
-
-	}
-
-	
-
-
-}
-
-void ARTSPlayerEye::InputAddY(const float AxisValue)
-{
-	if (FMath::IsNearlyZero(AxisValue))
-	{
-		return;
-
-	}
-
-	switch (m_InputState)
-	{
-	case ERTSInputState::CameraMouseShuffle:
-		AddForwardMovement(AxisValue);
-		break;
-	case ERTSInputState::CameraMouseTurn:
-		if (auto *pController = Cast<ARTSPlayerController>(GetController()))
-		{
-			pController->SetMouseLocation(m_SeamlessRotationPrePos.X, m_SeamlessRotationPrePos.Y);
-
-		}
-		AddCameraPitch(AxisValue);
-		break;
-	case ERTSInputState::PlacementCameraMouseTurn:
-		if (auto *pController = Cast<ARTSPlayerController>(GetController()))
-		{
-			pController->SetMouseLocation(m_SeamlessRotationPrePos.X, m_SeamlessRotationPrePos.Y);
-
-		}
-		AddCameraPitch(AxisValue);
-		break;
-
-	}
-
-
-}
-
-void ARTSPlayerEye::ActionSelectStart()
-{
-	switch (m_InputState)
-	{
-	case ERTSInputState::Idle:
-		m_InputState = ERTSInputState::CameraMouseShuffle;
-		break;
-	//Placing a building while seamless-rotating the camera is unsupported
-	case ERTSInputState::Placement:
-		if (auto *pGameInstance = Cast<URTSGameInstance>(GetGameInstance()))
-		{
-			pGameInstance->GetMainStructureFactory()->CommitPreviewBuilding(m_pBuildingPreviewCurrent);
-			StopBuildingPreview();
-
-		}
-		break;
-
-	}
-
-
-}
-
-void ARTSPlayerEye::ActionSelectEnd()
-{
-	switch (m_InputState)
-	{
-	case ERTSInputState::CameraMouseShuffle:
-		m_InputState = ERTSInputState::Idle;
-		break;
-
-	}	
-
-
-}
-
-void ARTSPlayerEye::ActionContextStart()
-{
-	switch (m_InputState)
-	{
-	case ERTSInputState::Placement:
-		StopBuildingPreview();
-		break;
-	case ERTSInputState::PlacementCameraMouseTurn:
-		StopBuildingPreview();
-		break;
-
-	}
-
-
-}
-
-void ARTSPlayerEye::EnterSeamlessRotation()
-{
-	if (auto *pController = Cast<ARTSPlayerController>(GetController()))
-	{
-		pController->GetMousePosition(m_SeamlessRotationPrePos.X, m_SeamlessRotationPrePos.Y);
-		//pController->HideMouseCursor(); //hiding cursor needs an additional click into the game to capture following click events (fixable ?)
-
-	}
-	UE_LOG(RTS_InputDebug, Log, TEXT("Entering seamless rotation"));
-	m_InputState = m_InputState == ERTSInputState::Placement ? ERTSInputState::PlacementCameraMouseTurn : ERTSInputState::CameraMouseTurn;
-
-}
-
-void ARTSPlayerEye::LeaveSeamlessRotation()
-{
-	if (auto *pController = Cast<ARTSPlayerController>(GetController()))
-	{
-		pController->SetMouseLocation(m_SeamlessRotationPrePos.X, m_SeamlessRotationPrePos.Y);
-		//pController->ShowMouseCursor();
-
-	}
-	UE_LOG(RTS_InputDebug, Log, TEXT("Leaving seamless rotation"));
-	m_InputState = m_InputState == ERTSInputState::PlacementCameraMouseTurn ? ERTSInputState::Placement : ERTSInputState::Idle;
-
-}
-
 void ARTSPlayerEye::AddForwardMovement(const float AxisValue)
 {
 	if (FMath::IsNearlyZero(AxisValue))
@@ -276,20 +80,11 @@ void ARTSPlayerEye::AddForwardMovement(const float AxisValue)
 		return;
 
 	}
-
 	auto Forward = m_pCameraSpringArm->GetForwardVector();
-	if (m_InputState == ERTSInputState::CameraMouseShuffle)
-	{
-		//Mouse based shuffle
-		AddActorWorldOffset(Forward.GetSafeNormal2D() * -AxisValue * m_MouseShuffleSpeed * m_pCamera->AspectRatio);
+	//todo: delta time
+	AddActorWorldOffset(Forward.GetSafeNormal2D() * AxisValue * m_KeyShuffleSpeed);
 
-	}
-	else
-	{
-		//Key based branch
-		AddActorWorldOffset(Forward.GetSafeNormal2D() * AxisValue * m_KeyShuffleSpeed);
 
-	}
 
 
 }
@@ -301,21 +96,31 @@ void ARTSPlayerEye::AddRightMovement(const float AxisValue)
 		return;
 
 	}
-
 	auto Right = m_pCameraSpringArm->GetRightVector();
-	if (m_InputState == ERTSInputState::CameraMouseShuffle)
+	//todo: delta time
+	AddActorWorldOffset(Right.GetSafeNormal2D() * AxisValue * m_KeyShuffleSpeed);
+	   
+
+}
+
+void ARTSPlayerEye::AddForwardMovementFromMouse(float AxisValue)
+{
+	auto Forward = m_pCameraSpringArm->GetForwardVector();
+	//Mouse based shuffle (todo: delta time)
+	AddActorWorldOffset(Forward.GetSafeNormal2D() * -AxisValue * m_MouseShuffleSpeed * m_pCamera->AspectRatio);
+	
+
+}
+
+void ARTSPlayerEye::AddRightMovementFromMouse(float AxisValue)
+{
+	auto Right = m_pCameraSpringArm->GetRightVector();
+	if (FMath::IsNearlyZero(AxisValue))
 	{
-		//Mouse based shuffle		
-		AddActorWorldOffset(Right.GetSafeNormal2D() * -AxisValue * m_MouseShuffleSpeed);
-		
-	}
-	else
-	{
-		//Key based branch, todo: delta time
-		AddActorWorldOffset(Right.GetSafeNormal2D() * AxisValue * m_KeyShuffleSpeed);
+		return;
 
 	}
-
+	AddActorWorldOffset(Right.GetSafeNormal2D() * -AxisValue * m_MouseShuffleSpeed);
 
 }
 
@@ -326,23 +131,24 @@ void ARTSPlayerEye::AddCameraYaw(const float AxisValue)
 		return;
 
 	}
-
-	if (m_InputState == ERTSInputState::CameraMouseTurn || m_InputState == ERTSInputState::PlacementCameraMouseTurn)
-	{
-		m_pCameraSpringArm->AddRelativeRotation(FRotator{ 0, AxisValue * m_MouseTurnSpeed, 0 });
-
-	}
-	else
-	{
-		m_pCameraSpringArm->AddRelativeRotation(FRotator{ 0, AxisValue * m_KeyTurnSpeed, 0 });
-
-
-	}
+	m_pCameraSpringArm->AddRelativeRotation(FRotator{ 0, AxisValue * m_KeyTurnSpeed, 0 });
 
 
 }
 
-void ARTSPlayerEye::AddCameraPitch(const float AxisValue)
+void ARTSPlayerEye::AddCameraYawFromMouse(float AxisValue)
+{
+	if (FMath::IsNearlyZero(AxisValue))
+	{
+		return;
+
+	}
+	m_pCameraSpringArm->AddRelativeRotation(FRotator{ 0, AxisValue * m_MouseTurnSpeed, 0 });
+
+
+}
+
+void ARTSPlayerEye::AddCameraPitchFromMouse(float AxisValue)
 {
 	if (FMath::IsNearlyZero(AxisValue))
 	{
@@ -353,13 +159,7 @@ void ARTSPlayerEye::AddCameraPitch(const float AxisValue)
 	auto SummedPitch = m_pCameraSpringArm->RelativeRotation.Pitch + AxisValue * m_MouseTurnSpeed * m_pCamera->AspectRatio;
 	if (SummedPitch > -m_CameraMaxPitch && SummedPitch < -m_CameraMinPitch)
 	{
-		if (m_InputState == ERTSInputState::CameraMouseTurn || m_InputState == ERTSInputState::PlacementCameraMouseTurn)
-		{
-			m_pCameraSpringArm->RelativeRotation.Pitch = SummedPitch;
-
-		}
-
-
+		m_pCameraSpringArm->RelativeRotation.Pitch = SummedPitch;
 	}
 
 
@@ -400,84 +200,93 @@ void ARTSPlayerEye::ZoomIn()
 
 
 }
-#pragma endregion
 
-void ARTSPlayerEye::UpdateCursorRoot()
+void ARTSPlayerEye::SetPreviewCursorPosWs(const FVector &NewPos)
 {
-	FHitResult PlaceableCursorResult;
-	FHitResult NotPlaceableCursorResult;
+	m_pCursorRoot->SetWorldLocation(NewPos);
 
-	auto *pController = Cast<APlayerController>( GetController() );
-	if (!pController)
+
+}
+
+void ARTSPlayerEye::UpdatePreviewCursorPos()
+{
+	auto *pCtrl = Cast<APlayerController>(GetController());
+	if (!pCtrl || !m_pCurrentTargetFactory)
+	{
+		return;
+	}
+
+	//Hit queries --		THIS SHOULD BE REPLACED WITH POLAR COLLISION FUNCTIONS		--
+	FHitResult LayerPlaceableHit;
+	pCtrl->GetHitResultUnderCursor(ARTSPlayerEye::s_CollisionLayerPlacable, false, LayerPlaceableHit);
+	if (LayerPlaceableHit.IsValidBlockingHit())
+	{
+		auto GridPosition{ m_pCurrentTargetFactory->Discretize(LayerPlaceableHit.Location) };
+		m_pCursorRoot->SetWorldLocation(GridPosition);
+	}
+
+
+}
+
+void ARTSPlayerEye::UpdateBuildingPreviewProperties()
+{
+	auto *pCtrl = Cast<APlayerController>(GetController());
+	if (!pCtrl || !m_pCurrentTargetFactory)
+	{
+		return;
+	}
+
+	auto *pGInst = Cast<URTSGameInstance>(GetGameInstance());
+	if (!pGInst)
 	{
 		return;
 
 	}
-		
-	//Hit queries
-	pController->GetHitResultUnderCursor(ECC_GameTraceChannel1, false, PlaceableCursorResult);
-	pController->GetHitResultUnderCursor(ECC_GameTraceChannel2, false, NotPlaceableCursorResult);
 
-	//On placable surfaces
-	if (PlaceableCursorResult.IsValidBlockingHit())
+	//Update cursor root rotation
+	auto NewRot{ (m_pCurrentTargetFactory->GetActorLocation() - m_pBuildingPreviewCurrent->GetActorLocation()).GetSafeNormal2D().ToOrientationQuat() };
+	m_pBuildingPreviewCurrent->SetActorRotation(NewRot);
+
+	//If placement loacation is occluded -- USE POLAR METHODS ---
+	FHitResult LayerNonPlacableHit;
+	pCtrl->GetHitResultUnderCursor(s_CollisionLayerNonPlacable, false, LayerNonPlacableHit);
+	if (LayerNonPlacableHit.IsValidBlockingHit() || !pGInst->GetMainStructureFactory()->IsPlacableAtPosition(m_pBuildingPreviewCurrent))
 	{
-		FVector DiscrPos;
-		auto *pGInst = Cast<URTSGameInstance>(GetGameInstance());
-
-		if (!pGInst)
+		UE_LOG(RTS_InputDebug, VeryVerbose, TEXT("Non-placable cursor hit result: %s"), *LayerNonPlacableHit.GetActor()->GetName());
+		//first occluded frame
+		if (m_bBuildingPreviewWasPlacable)
 		{
-			return;
+			//defer feedback to actor
+			m_pBuildingPreviewCurrent->NotifyNonPlacable();
+			m_bBuildingPreviewWasPlacable = false;
 
 		}
-		DiscrPos = pGInst->GetMainStructureFactory()->Discretize(PlaceableCursorResult.Location);
-		
-		//Synch the cursor roots position
-		m_pCursorRoot->SetWorldLocation(DiscrPos);
-		UE_LOG(RTS_InputDebug, VeryVerbose, TEXT("Placable Cursor hit result: %s"), *PlaceableCursorResult.GetActor()->GetName());
-	
-		//While placing buildings
-		if ( m_pBuildingPreviewCurrent && (m_InputState == ERTSInputState::Placement || m_InputState == ERTSInputState::PlacementCameraMouseTurn) )
-		{
-			//Update cursor root rotation
-			//(fixed location is debug)
-			auto NewRot = (-m_pBuildingPreviewCurrent->GetActorLocation()).GetSafeNormal2D().ToOrientationQuat();
-			m_pBuildingPreviewCurrent->SetActorRotation(NewRot);
-			
-			//If placement loacation is occluded
-			if (NotPlaceableCursorResult.IsValidBlockingHit() || !pGInst->GetMainStructureFactory()->IsPlacableAtPosition(m_pBuildingPreviewCurrent))
-			{
-				UE_LOG(RTS_InputDebug, VeryVerbose, TEXT("Non-placable cursor hit result: %s"), *NotPlaceableCursorResult.GetActor()->GetName());
-				//first occluded frame
-				if (m_bBuildingPreviewWasPlacable)
-				{
-					//defer feedback to actor
-					m_pBuildingPreviewCurrent->NotifyNonPlacable();
-					m_bBuildingPreviewWasPlacable = false;
 
-				}
-				
-			}
-			else
-			{
-				//first unoccluded frame
-				if (!m_bBuildingPreviewWasPlacable)
-				{
-					//defer feedback to actor
-					m_pBuildingPreviewCurrent->NotifyPlacable();
-					m_bBuildingPreviewWasPlacable = true;
-
-				}
-				
-			}
-
-		}
-	
 	}
-		
+	else
+	{
+		//first unoccluded frame
+		if (!m_bBuildingPreviewWasPlacable)
+		{
+			//defer feedback to actor
+			m_pBuildingPreviewCurrent->NotifyPlacable();
+			m_bBuildingPreviewWasPlacable = true;
+
+		}
+
+	}
+
 
 }
 
-void ARTSPlayerEye::StopBuildingPreview()
+bool ARTSPlayerEye::TryCommitBuildingPreview()
+{
+	return m_pCurrentTargetFactory->TryCommitPreviewBuilding(m_pBuildingPreviewCurrent);
+
+
+}
+
+void ARTSPlayerEye::DiscardBuildingPreview()
 {
 	UE_LOG(RTS_StructurePlacement, Log, TEXT("Stopping building preview"));
 	if (m_pBuildingPreviewCurrent)
@@ -485,9 +294,115 @@ void ARTSPlayerEye::StopBuildingPreview()
 		m_pBuildingPreviewCurrent->Destroy();
 
 	}
-	//Also disrupts any camera movement
-	m_InputState =  ERTSInputState::Idle;
 	//Set to unplacable so a new building is checked in the first frame
 	m_bBuildingPreviewWasPlacable = false;
 
+
 }
+
+#pragma endregion
+
+
+//Protected------------------
+
+void ARTSPlayerEye::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	//m_pViewportClient = GetGameInstance()->GetGameViewportClient();
+	//check(m_pViewportClient);
+	//only on begin play
+	
+
+}
+
+void ARTSPlayerEye::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	m_pCameraSpringArm->TargetArmLength = FMath::FInterpTo(m_pCameraSpringArm->TargetArmLength, m_aZoomNodes[m_ZoomIndex].m_Distance, DeltaTime, 5);
+
+	m_CameraState.Update();
+	m_PlacementState.Update();
+
+	//UpdateCursorRoot();
+
+}
+
+void ARTSPlayerEye::BeginPlay()
+{
+	Super::BeginPlay();
+
+
+}
+
+
+#pragma region Input
+void ARTSPlayerEye::SetupPlayerInputComponent(UInputComponent *InputComponent)
+{
+	//Super::SetupPlayerInputComponent(InputComponent);
+
+	InputComponent->BindAxis(s_AxisMouseX);
+	InputComponent->BindAxis(s_AxisMouseY);
+
+	InputComponent->BindAxis(TEXT("MoveX"), this, &ARTSPlayerEye::AddRightMovement);
+	InputComponent->BindAxis(TEXT("MoveY"), this, &ARTSPlayerEye::AddForwardMovement);
+
+	InputComponent->BindAxis(TEXT("RotateCamera"), this, &ARTSPlayerEye::AddCameraYaw);
+
+	InputComponent->BindAction(TEXT("Select"), IE_Pressed, this, &ARTSPlayerEye::ActionSelectStart);
+	InputComponent->BindAction(TEXT("Select"), IE_Released, this, &ARTSPlayerEye::ActionSelectEnd);
+
+	InputComponent->BindAction(TEXT("ContextAction"), IE_Pressed, this, &ARTSPlayerEye::ActionContextStart);
+	InputComponent->BindAction(TEXT("ContextAction"), IE_Released, this, &ARTSPlayerEye::ActionContextEnd);
+
+	InputComponent->BindAction(TEXT("SeamlessRotate"), IE_Pressed, this, &ARTSPlayerEye::EnterSeamlessRotation);
+	InputComponent->BindAction(TEXT("SeamlessRotate"), IE_Released, this, &ARTSPlayerEye::LeaveSeamlessRotation);
+	
+	InputComponent->BindAction(TEXT("ZoomOut"), IE_Pressed, this, &ARTSPlayerEye::ZoomOut);
+	InputComponent->BindAction(TEXT("ZoomIn"), IE_Pressed, this, &ARTSPlayerEye::ZoomIn);
+
+}
+
+void ARTSPlayerEye::ActionSelectStart()
+{
+	m_CameraState.HandleInput(EAbstractInputEvent::ActionSelect_Start);
+	m_PlacementState.HandleInput(EAbstractInputEvent::ActionSelect_Start);
+
+}
+
+void ARTSPlayerEye::ActionSelectEnd()
+{
+	m_CameraState.HandleInput(EAbstractInputEvent::ActionSelect_End);
+	m_PlacementState.HandleInput(EAbstractInputEvent::ActionSelect_End);
+
+}
+
+void ARTSPlayerEye::ActionContextStart()
+{
+	m_CameraState.HandleInput(EAbstractInputEvent::ActionContext_Start);
+	m_PlacementState.HandleInput(EAbstractInputEvent::ActionContext_Start);
+
+
+}
+
+void ARTSPlayerEye::ActionContextEnd()
+{
+	m_CameraState.HandleInput(EAbstractInputEvent::ActionContext_End);
+	m_PlacementState.HandleInput(EAbstractInputEvent::ActionContext_End);
+
+
+}
+
+void ARTSPlayerEye::EnterSeamlessRotation()
+{
+	m_CameraState.HandleInput(EAbstractInputEvent::ActionRotate_Start);
+
+
+}
+
+void ARTSPlayerEye::LeaveSeamlessRotation()
+{
+	m_CameraState.HandleInput(EAbstractInputEvent::ActionRotate_End);
+
+
+}
+#pragma endregion

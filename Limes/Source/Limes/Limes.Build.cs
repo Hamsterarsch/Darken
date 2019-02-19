@@ -1,5 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
+using System.IO;
 using UnrealBuildTool;
 
 public class Limes : ModuleRules
@@ -11,7 +12,12 @@ public class Limes : ModuleRules
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule" });
+                
+        PublicAdditionalLibraries.Add( Path.GetFullPath(Path.Combine(ModuleDirectory, "../../Binaries/Win64/PolarMath.lib")) );
+        PublicIncludePaths.Add( Path.Combine(ModuleDirectory, "../../PolarMath/hdr/") );
 
+        System.Console.WriteLine(Path.Combine(ModuleDirectory, "../../PolarMath/hdr/"));
+        
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 		

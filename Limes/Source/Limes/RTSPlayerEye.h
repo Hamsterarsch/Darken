@@ -4,7 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/SpectatorPawn.h"
+#include "CameraState.h"
+#include "PlacementState.h"
 #include "RTSPlayerEye.generated.h"
+
+enum class EAbstractInputEvent : size_t
+{
+	ActionSelect_Start,
+	ActionSelect_End,
+	ActionContext_Start,
+	ActionContext_End,
+	ActionRotate_Start,
+	ActionRotate_End,
+	PlaceBuilding_Start,
+	PlaceInfra_Start,
+	PlayeInfra_End
+
+
+};
 
 enum class ERTSInputState
 {
@@ -50,7 +67,28 @@ class LIMES_API ARTSPlayerEye : public ASpectatorPawn
 public:
 	ARTSPlayerEye();
 	
-	void NotifyNewBuildingPreview(class ABuildingPreview *pNewPreview);
+	void NotifyNewBuildingPreview(class ABuildingPreview *pNewPreview, class ARTSStructureFactory *pFactory);
+	void AddForwardMovement(float AxisValue);
+	void AddRightMovement(float AxisValue);
+	void AddForwardMovementFromMouse(float AxisValue);
+	void AddRightMovementFromMouse(float AxisValue);
+	void AddCameraYaw(float AxisValue);
+	void AddCameraYawFromMouse(float AxisValue);
+	void AddCameraPitchFromMouse(float AxisValue);
+	void ZoomOut();
+	void ZoomIn();
+
+	void SetPreviewCursorPosWs(const FVector &NewPos);
+	void UpdatePreviewCursorPos();
+	void UpdateBuildingPreviewProperties();
+	bool TryCommitBuildingPreview();
+	void DiscardBuildingPreview();
+
+	const static FName s_AxisMouseX;
+	const static FName s_AxisMouseY;
+	constexpr static ECollisionChannel s_CollisionLayerPlacable{ ECC_GameTraceChannel1 };
+	constexpr static ECollisionChannel s_CollisionLayerNonPlacable{ ECC_GameTraceChannel2 };
+
 
 protected:
 	virtual void PostInitializeComponents() override;
@@ -59,26 +97,13 @@ protected:
 
 	virtual void SetupPlayerInputComponent(UInputComponent *InputComponent) override;
 
-	void InputAddX(float AxisValue);
-	void InputAddY(float AxisValue);
 	void ActionSelectStart();
 	void ActionSelectEnd();
 	void ActionContextStart();
+	void ActionContextEnd();
 	void EnterSeamlessRotation();
 	void LeaveSeamlessRotation();
-
-	void AddForwardMovement(float AxisValue);
-	void AddRightMovement(float AxisValue);
-	void AddCameraYaw(float AxisValue);
-	void AddCameraPitch(float AxisValue);
-	void ZoomOut();
-	void ZoomIn();
-
-	void UpdateCursorRoot();
-	void StopBuildingPreview();
-
-	ERTSInputState m_InputState;
-
+	   
 	UPROPERTY(VisibleAnywhere)
 		class USpringArmComponent *m_pCameraSpringArm;
 
@@ -115,11 +140,19 @@ protected:
 	UPROPERTY()
 		class ABuildingPreview *m_pBuildingPreviewCurrent;
 
+	UPROPERTY()
+		class ARTSStructureFactory *m_pCurrentTargetFactory;
+
 	bool m_bBuildingPreviewWasPlacable;
 	FVector2D m_MouseShufflePreMousePos;
 	float m_ZoomTargetDist;
 	float m_ZoomTargetPitch;
 	int32 m_ZoomIndex;
 	FVector m_SeamlessRotationPrePos;
+
+	CCameraStateMachine m_CameraState;
+	CPlacementStateMachine m_PlacementState;
+
+
 
 };

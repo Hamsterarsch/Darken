@@ -1,66 +1,76 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "BuildingFactory.h"
+#include "RTSStructureFactory.h"
 #include "Limes.h"
 #include "BuildingPreview.h"
 #include "Engine/World.h"
 #include "RTSGameInstance.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/BoxComponent.h"
+#include "BuildingBase.h"
 #include "RTSPlayerEye.h"
 
 constexpr auto ECCPlacable = ECC_GameTraceChannel1;
 constexpr auto ECCNonPlacable = ECC_GameTraceChannel2;
 
-ABuildingFactory::ABuildingFactory()
+ARTSStructureFactory::ARTSStructureFactory()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 }
 
-void ABuildingFactory::CommitPreviewBuilding(const ABuildingPreview *pPreviewBuilding) const
+bool ARTSStructureFactory::TryCommitPreviewBuilding(ABuildingPreview *pPreviewBuilding)
 {
-	bool bCommitSuccessful{ true };
 	//todo: game instance updates (gameplay)
 
 	if (auto *pClass = pPreviewBuilding->GetPreviewedClass())
 	{
-		if (pPreviewBuilding->IsA<ARadialActorBase>())
+		if (pClass->IsChildOf<ABuildingBase>())
 		{
 			auto Transform = pPreviewBuilding->GetActorTransform();
 			auto *pActor = GetWorld()->SpawnActor(pClass, &Transform);
 
-			auto *pRadialActor = Cast<ARadialActorBase>(pActor);
+			auto *pBuildingActor = Cast<ABuildingBase>(pActor);
+			pBuildingActor->InitializePolarCollision(this);
 			
-			if (IsPlacableAtPosition(pRadialActor))
-			{				
+			if (HasIntersectionsWithChildBuildings(pBuildingActor))
+			{
+				pActor->Destroy();
+				return false;
+			}
+			else
+			{
 				UE_LOG(RTS_StructureFactory, Log, TEXT("Commiting preview building %s"), *pPreviewBuilding->GetName());
-				AddCollisionComponents(pRadialActor);
-				pActor->DrawDebugComponents();
-				return;
-			}		
-			pActor->Destroy();
+				//AddCollisionComponents(pRadialActor);
+				//pActor->DrawDebugComponents();
+				AddChildBuilding(pBuildingActor);
+				pPreviewBuilding->Destroy();
+				return true;
+					
+
+			}
 
 		}
 
 	}	
 	UE_LOG(RTS_StructureFactory, Error, TEXT("Could not commit preview building"));
-		   
+	return false;
+
 
 }
 
-FVector ABuildingFactory::Discretize(const FVector &ToConvert) const
+FVector ARTSStructureFactory::Discretize(const FVector &ToConvert) const
 {
 	return m_SpaceDiscretizer.Discretize(ToConvert);
 
 }
 
-bool ABuildingFactory::IsPlacableAtPosition(ARadialActorBase *pActor) const
+bool ARTSStructureFactory::IsPlacableAtPosition(ARadialActorBase *pActor) const
 {
-	auto SymmetryOffset = FMath::FloorToInt(pActor->GetCellWidth() * .5);
+	auto SymmetryOffset = FMath::FloorToInt(pActor->GetWidthInCells() * .5);
 	bool bBlockingHit{ false };
 
-	for (uint32 DepthOffset{ 0 }; DepthOffset < pActor->GetCellDepth(); ++DepthOffset)
+	for (uint32 DepthOffset{ 0 }; DepthOffset < pActor->GetDepthInCells(); ++DepthOffset)
 	{
 		auto LowBorder = m_SpaceDiscretizer.Discretize(pActor->GetActorLocation(), -SymmetryOffset, DepthOffset);
 		auto HighBorder = m_SpaceDiscretizer.Discretize(pActor->GetActorLocation(), SymmetryOffset, DepthOffset);
@@ -75,7 +85,7 @@ bool ABuildingFactory::IsPlacableAtPosition(ARadialActorBase *pActor) const
 
 }
 
-void ABuildingFactory::InstantiatePreviewBuilding(EBuildingTypes Type) const
+void ARTSStructureFactory::InstantiatePreviewBuilding(EBuildingTypes Type)
 {	
 	if (Type == EBuildingTypes::None)
 	{
@@ -111,7 +121,7 @@ void ABuildingFactory::InstantiatePreviewBuilding(EBuildingTypes Type) const
 
 	if (auto *pPlayer = Cast<ARTSPlayerEye>(GetGameInstance()->GetFirstLocalPlayerController(GetWorld())->GetPawn()))
 	{
-		pPlayer->NotifyNewBuildingPreview(pNewPreview);
+		pPlayer->NotifyNewBuildingPreview(pNewPreview, this);
 
 	}
 	else
@@ -125,36 +135,89 @@ void ABuildingFactory::InstantiatePreviewBuilding(EBuildingTypes Type) const
 }
 
 
+PolarMath::CPolarTransform ARTSStructureFactory::GetPolarTransform() const
+{
+	return m_PolarTransform;
+
+}
+
+double ARTSStructureFactory::GetCellWidthAngle(double LowRangeRadius) const
+{
+	return m_SpaceDiscretizer.GetCellWidthAngle(LowRangeRadius);
+
+
+}
+
+double ARTSStructureFactory::GetCellDepth() const
+{
+	return m_SpaceDiscretizer.GetCellDepth();
+
+
+}
+
+void ARTSStructureFactory::AddChildBuilding(ABuildingBase *pNewChild)
+{
+	m_apChildBuildings.AddUnique(pNewChild);
+
+
+}
+
+void ARTSStructureFactory::RemoveChildBuilding(ABuildingBase *pChildToRemove)
+{
+	m_apChildBuildings.Remove(pChildToRemove);
+
+
+}
+
+bool ARTSStructureFactory::HasIntersectionsWithChildBuildings(class ARadialActorBase *pBuildingToTest) const
+{
+	for (auto &&ChildBuilding : m_apChildBuildings)
+	{
+		if (ChildBuilding->HasIntersectionsWith(pBuildingToTest))
+		{
+			return true;
+		}
+	
+	
+	}
+	return false;
+
+
+}
+
 //Protected--------------------
 
-void ABuildingFactory::Tick(float DeltaTime)
+void ARTSStructureFactory::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
 }
 
-void ABuildingFactory::PostInitializeComponents()
+void ARTSStructureFactory::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	m_SpaceDiscretizer = SpaceDiscretizer{ GetActorLocation(), 600, 30, 3 };
+	auto ActorPosWs{ GetActorLocation() };
+	m_SpaceDiscretizer = SpaceDiscretizer{ ActorPosWs, 600, 30, 3 };
+	m_PolarTransform = PolarMath::CPolarTransform{ ActorPosWs.X, ActorPosWs.Y };
+
 
 }
 
-void ABuildingFactory::AddCollisionComponents(ARadialActorBase *pActor) const
+void ARTSStructureFactory::AddCollisionComponents(ARadialActorBase *pActor) const
 {
-	auto SymmetryOffset = FMath::FloorToInt(pActor->GetCellWidth() * .5);
+	auto SymmetryOffset = FMath::FloorToInt(pActor->GetWidthInCells() * .5);
 
-	for (uint32 CellOffset{ 0 }; CellOffset < pActor->GetCellWidth(); ++CellOffset)
+	for (uint32 CellOffset{ 0 }; CellOffset < pActor->GetWidthInCells(); ++CellOffset)
 	{
-		for (uint32 DepthOffset{ 0 }; DepthOffset < pActor->GetCellDepth(); ++DepthOffset)
+		for (uint32 DepthOffset{ 0 }; DepthOffset < pActor->GetDepthInCells(); ++DepthOffset)
 		{
 			auto CellCenterPos{ m_SpaceDiscretizer.Discretize(pActor->GetActorLocation(), CellOffset - SymmetryOffset, DepthOffset) };
 			
 			auto *pComp = NewObject<UBoxComponent>(pActor);
 			pComp->RegisterComponent();
 
-			pComp->SetBoxExtent({ m_SpaceDiscretizer.GetCellDepth() * .4f, 32, 32 });
+			pComp->SetBoxExtent({ static_cast<float>(m_SpaceDiscretizer.GetCellDepth()) * .4f, 32, 32 });
 			
 			auto QuatToFactory = (GetActorLocation() - CellCenterPos).GetSafeNormal2D().ToOrientationQuat();
 			pComp->SetWorldLocationAndRotation(CellCenterPos, QuatToFactory);

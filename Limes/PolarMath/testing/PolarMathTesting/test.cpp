@@ -1,38 +1,66 @@
 #include "pch.h"
 #include "gtest/gtest.h"
-#include "../../hdr/RadialTransform.h"
+#include "hdr/PolarTransform.h"
+#include "hdr/PolarPoint.h"
+#include "hdr/Globals.h"
+#include "hdr/Vector2D.h"
 
 #include <iostream>
 
 
+#include "hdr/PolarCollider.h"
+#include "hdr/PolarCollision.h"
+
 TEST(TransformTests, ToParent_Arbitrary)
 {
 	//Arbitrary case
+	PolarMath::CPolarTransform MainFactory{ 0,0 };
+	PolarMath::CPolarTransform SubFactory{ 3, 3 };
+	PolarMath::SPolarPoint SubFactoryPoint{ 3, 270 };
+	PolarMath::SPolarPoint SubFactoryPoint2{ 3, 180 };
 
-	PolarMath::SPolarPoint SubFactory{ 2, 240 };
-	PolarMath::SPolarPoint RelativePoint{ 1, 15 };
+	auto Transformed{ SubFactory.TransformPointTo(MainFactory, SubFactoryPoint) };
+	EXPECT_NEAR(0, Transformed.Angle, PolarMath::ReqPrecision);
+	EXPECT_NEAR(3, Transformed.Radius, PolarMath::ReqPrecision);
 
-	auto PointRootRelative{ SubFactory.InverseTransform(RelativePoint) };
+	Transformed = SubFactory.TransformPointTo(MainFactory, SubFactoryPoint2);
+	EXPECT_NEAR(90, Transformed.Angle, PolarMath::ReqPrecision);
+	EXPECT_NEAR(3, Transformed.Radius, PolarMath::ReqPrecision);
 
-	EXPECT_NEAR(14.051913114226, PointRootRelative.Angle, PolarMath::ReqPrecision);
-	EXPECT_NEAR(1.06597218296, PointRootRelative.Radius, PolarMath::ReqPrecision);
-		   	 
 
 }
 
 TEST(TransformTests, ToParent_Collinear)
 {
-	PolarMath::SPolarPoint SubFactory{ 4, 180 };
-	PolarMath::SPolarPoint RelativePoint{ 2, 180 };
+	PolarMath::CPolarTransform MainFactory{ 0, 0 };
+	PolarMath::CPolarTransform SubFactory{ -2, 0 };
+	PolarMath::SPolarPoint Point{ 2, 180 };
 
-	auto PointRootRelative{ SubFactory.InverseTransform(RelativePoint) };
+	auto Transformed{ SubFactory.TransformPointTo(MainFactory, Point) };
 
-	EXPECT_NEAR(180, PointRootRelative.Angle, PolarMath::ReqPrecision);
-	EXPECT_NEAR(6, PointRootRelative.Radius, PolarMath::ReqPrecision);
+	EXPECT_NEAR(180, Point.Angle, PolarMath::ReqPrecision);
+	EXPECT_NEAR(4, Point.Radius, PolarMath::ReqPrecision);
 	
+	
+}
+
+TEST(TransformTests, ToOther_Arbitrary)
+{
+	//make a more complex test
+
+	PolarMath::CPolarTransform SubFactory1{ 2, 0 };
+	PolarMath::CPolarTransform SubFactory2{ -2, 0 };
+	PolarMath::SPolarPoint Point{ 2, 0 };
+
+	auto Transformed{ SubFactory1.TransformPointTo(SubFactory2, Point) };
+
+	EXPECT_NEAR(0, Point.Angle, PolarMath::ReqPrecision);
+	EXPECT_NEAR(6, Point.Radius, PolarMath::ReqPrecision);
+
 
 }
 
+/*polar approaches
 TEST(TransformTests, ToChild_Arbitrary)
 {
 	//Arbitrary case
@@ -60,6 +88,7 @@ TEST(TransformTests, ToChild_Collinear)
 
 
 }
+*/
 
 TEST(GlobalFunctTests, ShortestAngleBetween)
 {
@@ -81,6 +110,7 @@ TEST(GlobalFunctTests, ShortestAngleBetweenSigned)
 	EXPECT_DOUBLE_EQ(-180, PolarMath::GetShortestAngleBetweenSigned(180, 0));
 	EXPECT_DOUBLE_EQ(-90, PolarMath::GetShortestAngleBetweenSigned(90, 360));
 
+
 }
 
 TEST(CollisionTests, PolarOnly)
@@ -95,18 +125,18 @@ TEST(CollisionTests, PolarOnly)
 	PolarMath::CPolarCollider Col_45_5{ Center45, 5, UniformDepth };
 
 	//Commutativity check
-	EXPECT_FALSE(Col_90_10.DoCollidersIntersect(Col_45_5));
-	EXPECT_FALSE(Col_45_5.DoCollidersIntersect(Col_90_10));
+	EXPECT_FALSE(Col_90_10.HasIntersectionsWith(Col_45_5));
+	EXPECT_FALSE(Col_45_5.HasIntersectionsWith(Col_90_10));
 
 	//Self intersection 
-	EXPECT_TRUE(Col_90_10.DoCollidersIntersect(Col_90_10));
-	EXPECT_TRUE(Col_45_5.DoCollidersIntersect(Col_45_5));
+	EXPECT_TRUE(Col_90_10.HasIntersectionsWith(Col_90_10));
+	EXPECT_TRUE(Col_45_5.HasIntersectionsWith(Col_45_5));
 
 	//One nonfractional unit difference
 	PolarMath::SPolarPoint Center32{ UniformRadius, 32 };
 	PolarMath::CPolarCollider Col_32_8{ Center32, 8, UniformDepth };
 
-	EXPECT_TRUE(Col_32_8.DoCollidersIntersect(Col_45_5));
+	EXPECT_TRUE(Col_32_8.HasIntersectionsWith(Col_45_5));
 
 	//Wrapping independence
 	PolarMath::SPolarPoint Center359{ UniformRadius, 359 };
@@ -116,11 +146,52 @@ TEST(CollisionTests, PolarOnly)
 	PolarMath::CPolarCollider Col_14_13{ Center14, 13, UniformDepth };
 
 		//2nd without wrapping
-	EXPECT_TRUE(Col_359_11.DoCollidersIntersect(Col_14_13));
+	EXPECT_TRUE(Col_359_11.HasIntersectionsWith(Col_14_13));
 
 	PolarMath::CPolarCollider Col_14_20{ Center14, 20, UniformDepth };
 
-	EXPECT_TRUE(Col_359_11.DoCollidersIntersect(Col_14_20));
+	EXPECT_TRUE(Col_359_11.HasIntersectionsWith(Col_14_20));
+
+
+}
+
+
+TEST(CollisionTests, Intersystem)
+{
+	PolarMath::CPolarTransform CartesianOrigin{ 0, 0 };
+	PolarMath::SPolarPoint MainLowCenter{ 1 , 0 };
+	PolarMath::CPolarCollider MainHull{ MainLowCenter, 5, 1 };
+	PolarMath::CPolarCollision MainCollision{ MainHull, CartesianOrigin };
+
+	PolarMath::CPolarTransform SubPos{ 3, 0 };
+	PolarMath::SPolarPoint SubLowCenter{ 1 , 180 };
+	PolarMath::CPolarCollider SubHull{ SubLowCenter, 5, 1 };
+	PolarMath::CPolarCollision SubCollision{ SubHull, SubPos };
+
+	EXPECT_TRUE(MainCollision.HasIntersectionsWith(SubCollision));
+
+	PolarMath::SPolarPoint SubLowCenter2{ 1, 0 };
+	PolarMath::CPolarCollider SubHull2{ SubLowCenter2, 5, 1 };
+	PolarMath::CPolarCollision SubCollision2{ SubHull2, SubPos };
+
+	EXPECT_FALSE(MainCollision.HasIntersectionsWith(SubCollision2));
+
+
+}
+
+TEST(CollisionTests, Intrasystem)
+{
+	PolarMath::CPolarTransform CartesianOrigin{ 0, 0 };
+	PolarMath::SPolarPoint MainLowCenter{ 1 , 0 };
+	PolarMath::CPolarCollider MainHull2{ MainLowCenter, 45, 1 };
+	PolarMath::SPolarPoint MainLowCenter2{ 1, 270 };
+	PolarMath::CPolarCollider MainHull3{ MainLowCenter2, 45, 1 };
+
+	PolarMath::CPolarCollision Col1{ MainHull2, CartesianOrigin };
+	PolarMath::CPolarCollision Col2{ MainHull3, CartesianOrigin };
+
+	EXPECT_TRUE(Col1.HasIntersectionsWith(Col2));
+
 
 
 }
@@ -134,7 +205,7 @@ TEST(CollisionTests, CommonCases)
 		PolarMath::CPolarCollider Col_90_R4_10_D2{ Center90_R4, 10, 2 };
 		PolarMath::CPolarCollider Col_96_R1_14_D3{ Center96_R1, 14, 3 };
 
-		EXPECT_TRUE(Col_90_R4_10_D2.DoCollidersIntersect(Col_96_R1_14_D3));
+		EXPECT_TRUE(Col_90_R4_10_D2.HasIntersectionsWith(Col_96_R1_14_D3));
 
 	}
 
@@ -145,7 +216,7 @@ TEST(CollisionTests, CommonCases)
 		PolarMath::CPolarCollider Col_1{ Center1, 180, 2 };
 		PolarMath::CPolarCollider Col_2{ Center2, 14, 3 };
 
-		EXPECT_FALSE(Col_1.DoCollidersIntersect(Col_2));
+		EXPECT_FALSE(Col_1.HasIntersectionsWith(Col_2));
 
 	}
 	
@@ -170,5 +241,6 @@ int main(int argc, char **argv)
 {
 	::testing::InitGoogleTest(&argc, argv);
 	return RUN_ALL_TESTS();
+
 
 }

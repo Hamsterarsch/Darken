@@ -32,6 +32,6 @@ public:
 	virtual void PreInitializeComponents() override;
 
 	UPROPERTY(EditDefaultsOnly)
-		TSoftClassPtr<class ABuildingFactory> m_StructureFactoryClass;
+		TSoftClassPtr<class ARTSStructureFactory> m_StructureFactoryClass;
 	
 };
