@@ -252,6 +252,8 @@ namespace PolarMath
 
 		class CPolarCollider TransformColliderTo(const CPolarTransform &Target, const CPolarCollider &Collider) const;
 
+		SVector2D GetCartesianPos() const noexcept { return m_CartesianPos; }
+
 		bool operator==(const CPolarTransform Rhs) const;
 
 	protected:

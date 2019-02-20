@@ -1,0 +1,18 @@
+﻿cl : Command line warning D9035: option 'Gm' has been deprecated and will be removed in a future release
+  pch.cpp
+cl : Command line warning D9035: option 'Gm' has been deprecated and will be removed in a future release
+  test.cpp
+PolarMath.lib(Globals.obj) : error LNK2038: mismatch detected for '_ITERATOR_DEBUG_LEVEL': value '0' doesn't match value '2' in test.obj
+PolarMath.lib(Globals.obj) : error LNK2038: mismatch detected for 'RuntimeLibrary': value 'MD_DynamicRelease' doesn't match value 'MDd_DynamicDebug' in test.obj
+PolarMath.lib(PolarTransform.obj) : error LNK2038: mismatch detected for '_ITERATOR_DEBUG_LEVEL': value '0' doesn't match value '2' in test.obj
+PolarMath.lib(PolarTransform.obj) : error LNK2038: mismatch detected for 'RuntimeLibrary': value 'MD_DynamicRelease' doesn't match value 'MDd_DynamicDebug' in test.obj
+PolarMath.lib(PolarCollision.obj) : error LNK2038: mismatch detected for '_ITERATOR_DEBUG_LEVEL': value '0' doesn't match value '2' in test.obj
+PolarMath.lib(PolarCollision.obj) : error LNK2038: mismatch detected for 'RuntimeLibrary': value 'MD_DynamicRelease' doesn't match value 'MDd_DynamicDebug' in test.obj
+PolarMath.lib(PolarPoint.obj) : error LNK2038: mismatch detected for '_ITERATOR_DEBUG_LEVEL': value '0' doesn't match value '2' in test.obj
+PolarMath.lib(PolarPoint.obj) : error LNK2038: mismatch detected for 'RuntimeLibrary': value 'MD_DynamicRelease' doesn't match value 'MDd_DynamicDebug' in test.obj
+PolarMath.lib(Vector2D.obj) : error LNK2038: mismatch detected for '_ITERATOR_DEBUG_LEVEL': value '0' doesn't match value '2' in test.obj
+PolarMath.lib(Vector2D.obj) : error LNK2038: mismatch detected for 'RuntimeLibrary': value 'MD_DynamicRelease' doesn't match value 'MDd_DynamicDebug' in test.obj
+PolarMath.lib(PolarCollider.obj) : error LNK2038: mismatch detected for '_ITERATOR_DEBUG_LEVEL': value '0' doesn't match value '2' in test.obj
+PolarMath.lib(PolarCollider.obj) : error LNK2038: mismatch detected for 'RuntimeLibrary': value 'MD_DynamicRelease' doesn't match value 'MDd_DynamicDebug' in test.obj
+LINK : warning LNK4098: defaultlib 'MSVCRT' conflicts with use of other libs; use /NODEFAULTLIB:library
+D:\Programme\UE4 Projects\LimesRepo\Limes\PolarMath\x64\Debug\PolarMathTesting.exe : fatal error LNK1319: 12 mismatches detected

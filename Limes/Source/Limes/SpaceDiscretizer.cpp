@@ -3,6 +3,7 @@
 #include "SpaceDiscretizer.h"
 #include "../hdr/Vector2D.h"
 #include "PolarPoint.h"
+#include "Constants.h"
 
 
 
@@ -47,11 +48,8 @@ FVector SpaceDiscretizer::Discretize(const FVector &ToConvert, int32 CellOffset,
 }
 
 double SpaceDiscretizer::GetCellWidthAngle(double LowRangeRadius) const noexcept
-{
-	auto RadiusRatio{ LowRangeRadius / m_RadiusRangeMin };
-	auto ArcLengthAtLowRange{ m_ComputedCellArcAtMin / RadiusRatio };
-
-	return (ArcLengthAtLowRange / (2 * PI * LowRangeRadius)) * 360 ; 
+{	
+	return  360 / ((2 * PI * LowRangeRadius) / m_ComputedCellArcAtMin);
 
 
 }

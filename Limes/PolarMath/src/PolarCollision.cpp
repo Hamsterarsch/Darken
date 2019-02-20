@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "hdr/PolarTransform.h"
 #include "hdr/PolarCollider.h"
+#include "hdr/Vector2D.h"
 
 
 using namespace PolarMath;
@@ -103,3 +104,53 @@ bool CPolarCollision::HasIntersectionsWith(const CPolarCollision &Other) const
 
 
 }
+
+double PolarMath::CPolarCollision::GetMainHullDepth() const noexcept
+{
+	return m_SourceHull.GetDepth();
+
+
+}
+
+double PolarMath::CPolarCollision::GetMainHullRightAngle() const noexcept
+{
+	return m_SourceHull.GetRightMin().Angle;
+
+
+}
+
+double PolarMath::CPolarCollision::GetMainHullLeftAngle() const noexcept
+{
+	return m_SourceHull.GetLeftMin().Angle;
+
+
+}
+
+double PolarMath::CPolarCollision::GetMainHullMinRadius() const noexcept
+{
+	return m_SourceHull.GetLeftMin().Radius;
+
+
+}
+
+double PolarMath::CPolarCollision::GetMainHullCenterAngle() const noexcept
+{
+	return m_SourceHull.GetCenterAngle();
+
+
+}
+
+double PolarMath::CPolarCollision::GetMainHullHalfWidthAngle() const noexcept
+{
+	return m_SourceHull.GetHalfAngle();
+
+
+}
+
+SVector2D PolarMath::CPolarCollision::GetCartesianCenter() const noexcept
+{
+	return m_SourceTf.GetCartesianPos();
+
+
+}
+

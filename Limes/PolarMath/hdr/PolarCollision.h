@@ -18,6 +18,21 @@ namespace PolarMath
 
 		bool HasIntersectionsWith(const CPolarCollision &Other) const;
 		
+		double GetMainHullDepth() const noexcept;
+
+		double GetMainHullRightAngle() const noexcept;
+
+		double GetMainHullLeftAngle() const noexcept;
+
+		double GetMainHullMinRadius() const noexcept;
+
+		double GetMainHullCenterAngle() const noexcept;
+
+		double GetMainHullHalfWidthAngle() const noexcept;
+
+		struct SVector2D GetCartesianCenter() const noexcept;
+
+
 
 	protected:
 		CPolarCollider m_SourceHull;

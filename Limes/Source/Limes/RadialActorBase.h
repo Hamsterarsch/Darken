@@ -22,6 +22,31 @@ public:
 
 	bool HasIntersectionsWith(ARadialActorBase *pRadialActor) const;
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnCollisionInitialized();
+
+	UFUNCTION(BlueprintCallable)
+		float GetMainHullDepth() const;
+
+	UFUNCTION(BlueprintCallable)
+		float GetMainHullRightAngle() const;
+
+	UFUNCTION(BlueprintCallable)
+		float GetMainHullLeftAngle() const;
+
+	UFUNCTION(BlueprintCallable)
+		float GetMainHullMinRadius() const;
+
+	UFUNCTION(BlueprintCallable)
+		FVector2D GetCollisionCartesianCenter() const;
+
+	UFUNCTION(BlueprintCallable)
+		float GetMainHullHalfWidthAngle() const;
+
+	UFUNCTION(BlueprintCallable)
+		float GetMainHullCenterAngle() const;
+
+
 	uint32 GetWidthInCells() const { return m_CellWidth; }
 	uint32 GetDepthInCells() const { return m_CellDepth; }
 
