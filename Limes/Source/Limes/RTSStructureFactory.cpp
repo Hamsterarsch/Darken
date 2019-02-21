@@ -234,3 +234,16 @@ void ARTSStructureFactory::AddCollisionComponents(ARadialActorBase *pActor) cons
 
 
 }
+
+//Private-----------------------
+
+void ARTSStructureFactory::OnActorClickedEvent(AActor *pTouchedActor, FKey ButtonPressed)
+{
+	if (auto *pGI{ Cast<URTSGameInstance>(GetGameInstance()) })
+	{
+		pGI->m_pSelectedStructureFactory = this;
+
+	}
+
+
+}

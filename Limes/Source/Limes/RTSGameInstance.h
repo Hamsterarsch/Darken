@@ -25,10 +25,12 @@ public:
 
 	void SetMainStructureFactory(class ARTSStructureFactory *pMainStructureFactory);
 
-protected:
-	UPROPERTY()
+
+	UPROPERTY(BlueprintReadOnly)
 		class ARTSStructureFactory *m_pSelectedStructureFactory;
 
+
+protected:
 	UPROPERTY()
 		class ARTSStructureFactory *m_pMainStructureFactory;
 	

@@ -16,6 +16,8 @@ class LIMES_API ARadialActorBase : public AActor
 public:	
 	ARadialActorBase();
 
+	virtual void PostInitializeComponents() override;
+
 	void InitializePolarCollision(class ARTSStructureFactory *pNewOwningFactory);
 
 	FVector GetRadialOrigin() const;

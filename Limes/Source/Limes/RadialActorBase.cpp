@@ -6,13 +6,44 @@
 #include "RTSStructureFactory.h"
 #include "DrawDebugHelpers.h"
 
+//Public------------
+
 ARadialActorBase::ARadialActorBase() :
 	m_bIsCollisionInitialized{ false }
-{
+{	
 }
 
 
-//Public------------
+void ARadialActorBase::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+
+	
+
+}
+
+void ARadialActorBase::InitializePolarCollision(ARTSStructureFactory *pNewFactory)
+{
+	m_pOwningFactory = pNewFactory;
+	auto DiscretizedPos{ GetActorLocation() };
+
+	DrawDebugCrosshairs(GetWorld(), DiscretizedPos, FRotator::ZeroRotator, 50, FColor::Red, true, 100);
+
+
+	auto CartesianCenter{ PolarMath::SVector2D(DiscretizedPos.X, DiscretizedPos.Y) };
+	auto PolarLowrangeCenter{ CartesianCenter.ToPolar() };
+
+	auto CellWidthAngle{ m_pOwningFactory->GetCellWidthAngle(PolarLowrangeCenter.Radius) };
+	auto HalfBuildingWidth{ CellWidthAngle * GetWidthInCells() * .5 };
+	PolarMath::CPolarCollider MainHull{ PolarLowrangeCenter,  HalfBuildingWidth, m_pOwningFactory->GetCellDepth() * GetDepthInCells() };
+
+	m_PolarCollision = PolarMath::CPolarCollision{ MainHull, pNewFactory->GetPolarTransform(), CellWidthAngle };
+	m_bIsCollisionInitialized = true;
+
+	OnCollisionInitialized();
+
+
+}
 
 FVector ARadialActorBase::GetRadialOrigin() const
 {
@@ -88,24 +119,4 @@ float ARadialActorBase::GetMainHullCenterAngle() const
 
 }
 
-void ARadialActorBase::InitializePolarCollision(ARTSStructureFactory *pNewFactory)
-{
-	m_pOwningFactory = pNewFactory;
-	auto DiscretizedPos{ GetActorLocation() };
 
-	DrawDebugCrosshairs(GetWorld(), DiscretizedPos, FRotator::ZeroRotator, 50, FColor::Red, true, 100 );
-	
-
-	auto CartesianCenter{ PolarMath::SVector2D(DiscretizedPos.X, DiscretizedPos.Y) };
-	auto PolarLowrangeCenter{ CartesianCenter.ToPolar() };
-
-	auto HalfBuildingWidth{ m_pOwningFactory->GetCellWidthAngle(PolarLowrangeCenter.Radius) * GetWidthInCells() * .5 };
-	PolarMath::CPolarCollider MainHull{ PolarLowrangeCenter,  HalfBuildingWidth, m_pOwningFactory->GetCellDepth() * GetDepthInCells() };
-
-	m_PolarCollision = PolarMath::CPolarCollision{ MainHull, pNewFactory->GetPolarTransform() };
-	m_bIsCollisionInitialized = true;
-
-	OnCollisionInitialized();
-
-
-}

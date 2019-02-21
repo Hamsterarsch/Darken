@@ -12,7 +12,7 @@ namespace PolarMath
 	public:
 		CPolarCollision() = default;
 
-		CPolarCollision(const class CPolarCollider &Hull, const CPolarTransform &Source);
+		CPolarCollision(const class CPolarCollider &Hull, const CPolarTransform &Source, double CellWidthAngle);
 
 		std::vector<class CPolarCollider> GenerateHullsForTarget(const CPolarTransform &Target) const;
 
@@ -37,6 +37,7 @@ namespace PolarMath
 	protected:
 		CPolarCollider m_SourceHull;
 		CPolarTransform m_SourceTf;
+		double m_CellWidthAngle;
 
 
 	};

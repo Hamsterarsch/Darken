@@ -281,6 +281,7 @@ void ARTSPlayerEye::UpdateBuildingPreviewProperties()
 
 bool ARTSPlayerEye::TryCommitBuildingPreview()
 {
+	m_pBuildingPreviewCurrent->SetActorLocation(m_pCursorRoot->GetComponentLocation());
 	return m_pCurrentTargetFactory->TryCommitPreviewBuilding(m_pBuildingPreviewCurrent);
 
 

@@ -8,6 +8,13 @@
 
 using namespace PolarMath;
 
+CPolarCollision::CPolarCollision(const CPolarCollider &Hull, const CPolarTransform &Source, double CellWidthAngle) :
+	m_SourceHull{ Hull },
+	m_SourceTf{ Source },
+	m_CellWidthAngle{ CellWidthAngle }
+{
+}
+
 std::vector<class CPolarCollider> CPolarCollision::GenerateHullsForTarget(const CPolarTransform &Target) const
 {
 	//Check for bad ratio
@@ -74,26 +81,19 @@ std::vector<class CPolarCollider> CPolarCollision::GenerateHullsForTarget(const 
 
 }
 
-CPolarCollision::CPolarCollision(const CPolarCollider &Hull, const CPolarTransform &Source) :
-	m_SourceHull{ Hull },
-	m_SourceTf{ Source }
-{
-}
-
-
 bool CPolarCollision::HasIntersectionsWith(const CPolarCollision &Other) const
 {
 	//trivial
 	if (m_SourceTf == Other.m_SourceTf)
 	{
-		return m_SourceHull.HasIntersectionsWith(Other.m_SourceHull);
+		return m_SourceHull.HasIntersectionsWith(Other.m_SourceHull, m_CellWidthAngle * .9);
 	}
 
 	auto vTargetHulls{ GenerateHullsForTarget(Other.m_SourceTf) };
 
 	for (auto &&Collider : vTargetHulls)
 	{
-		if (Collider.HasIntersectionsWith(Other.m_SourceHull))
+		if (Collider.HasIntersectionsWith(Other.m_SourceHull, m_CellWidthAngle * .9))
 		{
 			return true;
 

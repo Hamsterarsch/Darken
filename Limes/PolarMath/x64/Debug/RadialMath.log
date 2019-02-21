@@ -1,8 +1,5 @@
-﻿  Globals.cpp
-  PolarCollider.cpp
+﻿  PolarCollider.cpp
   PolarCollision.cpp
-  PolarPoint.cpp
   PolarTransform.cpp
-  Vector2D.cpp
   Generating Code...
   RadialMath.vcxproj -> D:\Programme\UE4 Projects\LimesRepo\Limes\PolarMath\..\Binaries\Win64\PolarMath.lib

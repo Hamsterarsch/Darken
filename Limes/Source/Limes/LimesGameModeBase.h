@@ -33,5 +33,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 		TSoftClassPtr<class ARTSStructureFactory> m_StructureFactoryClass;
+
 	
 };

@@ -71,5 +71,10 @@ protected:
 	FVector m_CurrentRadialOrigin{ 0,0,0 };
 	PolarMath::CPolarTransform m_PolarTransform;
 	SpaceDiscretizer m_SpaceDiscretizer;
+
+
+private:
+	void OnActorClickedEvent(AActor *pTouchedActor, FKey ButtonPressed);
+
 	
 };
