@@ -13,9 +13,14 @@
 constexpr auto ECCPlacable = ECC_GameTraceChannel1;
 constexpr auto ECCNonPlacable = ECC_GameTraceChannel2;
 
-ARTSStructureFactory::ARTSStructureFactory()
+ARTSStructureFactory::ARTSStructureFactory() :
+	m_bIsMainFactory{ false },
+	m_CellDepthMultiplier{ 3 },
+	m_InnermostCellcount{ 30 }
 {
 	PrimaryActorTick.bCanEverTick = true;
+	m_pVisualizerPlane = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualizerPlane"));
+
 
 }
 
@@ -85,32 +90,21 @@ bool ARTSStructureFactory::IsPlacableAtPosition(ARadialActorBase *pActor) const
 
 }
 
-void ARTSStructureFactory::InstantiatePreviewBuilding(EBuildingTypes Type)
+void ARTSStructureFactory::InstantiatePreviewBuilding(TSoftClassPtr<class ABuildingPreview> Type)
 {	
-	if (Type == EBuildingTypes::None)
-	{
-		UE_LOG(RTS_StructureFactory, Error, TEXT("InstantiatePreviewBuilding:: missing building type"));
-
-	}
-
-	UE_LOG(RTS_StructureFactory, Log, TEXT("Instantiating preview building: %i"), (uint8)Type);
+	UE_LOG(RTS_StructureFactory, Log, TEXT("Instantiating preview building: %s"), *Type.GetAssetName());
 	ABuildingPreview *pNewPreview{ nullptr };
-	switch (Type)
+	if (auto pClass = SafeLoadClassPtr(Type))
 	{
-	case EBuildingTypes::SimpleHome:
-		if (auto pClass = SafeLoadClassPtr(m_SimpleHomePreviewClass))
-		{
-			pNewPreview = GetWorld()->SpawnActor<ABuildingPreview>(pClass);
-
-		}
-		else
-		{
-			UE_LOG(RTS_StructureFactory, Error, TEXT("Unable to load simple home instantiate preview building class"));
-
-		}
-		break;
+		pNewPreview = GetWorld()->SpawnActor<ABuildingPreview>(pClass);
 
 	}
+	else
+	{
+		UE_LOG(RTS_StructureFactory, Error, TEXT("Unable to load simple home instantiate preview building class"));
+
+	}
+
 
 	if (!pNewPreview)
 	{
@@ -153,6 +147,11 @@ double ARTSStructureFactory::GetCellDepth() const
 	return m_SpaceDiscretizer.GetCellDepth();
 
 
+}
+
+double ARTSStructureFactory::GetCellArcWidth() const
+{
+	return m_SpaceDiscretizer.GetCellArcWidth();
 }
 
 void ARTSStructureFactory::AddChildBuilding(ABuildingBase *pNewChild)
@@ -198,8 +197,23 @@ void ARTSStructureFactory::PostInitializeComponents()
 	Super::PostInitializeComponents();
 
 	auto ActorPosWs{ GetActorLocation() };
-	m_SpaceDiscretizer = SpaceDiscretizer{ ActorPosWs, 600, 30, 3 };
 	m_PolarTransform = PolarMath::CPolarTransform{ ActorPosWs.X, ActorPosWs.Y };
+	
+	if (m_bIsMainFactory)
+	{
+		m_SpaceDiscretizer = SpaceDiscretizer{ ActorPosWs, m_MinRadius, m_InnermostCellcount, m_CellDepthMultiplier };
+
+	}
+
+	auto *pGInst{ Cast<URTSGameInstance>(GetGameInstance()) };
+	if (m_bIsMainFactory && pGInst )
+	{
+		pGInst->SetMainStructureFactory(this);
+
+		
+	}
+
+	OnClicked.AddDynamic(this, &ARTSStructureFactory::OnActorClickedEvent);
 
 
 }
@@ -235,13 +249,22 @@ void ARTSStructureFactory::AddCollisionComponents(ARadialActorBase *pActor) cons
 
 }
 
+void ARTSStructureFactory::SetUpGridVisualization()
+{
+	auto *pMaterial = m_pVisualizerPlane->GetMaterial(0);
+	//m_pVisualizerPlane->CreateDynamicMaterialInstance(0, pMaterial, GetName() + TEXT(".PlaneVisMaterial") );
+	//todo: continue------------------------
+
+}
+
 //Private-----------------------
 
 void ARTSStructureFactory::OnActorClickedEvent(AActor *pTouchedActor, FKey ButtonPressed)
 {
 	if (auto *pGI{ Cast<URTSGameInstance>(GetGameInstance()) })
 	{
-		pGI->m_pSelectedStructureFactory = this;
+		pGI->SetSelectedStructureFactory(this);
+		
 
 	}
 

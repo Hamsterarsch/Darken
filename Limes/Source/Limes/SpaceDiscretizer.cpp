@@ -19,7 +19,7 @@ FVector SpaceDiscretizer::Discretize(const FVector &ToConvert, int32 CellOffset,
 	auto CellsInRing = m_InnermostCellCount + (3 * RingNumber);
 
 	auto RadiusToRing = (RingNumber * m_ComputedCellDepth) + m_RadiusRangeMin;
-	auto RingCellCircumference = m_ComputedCellArcAtMin / RadiusToRing;
+	auto RingCellCircumference = m_ComputedCellArcWidth / RadiusToRing;
 
 	auto IsRingEven = RingNumber % 2;
 	//UE_LOG(LogTemp, Warning, TEXT("%f"), AsRadialCoords.m_Azimut);
@@ -49,7 +49,7 @@ FVector SpaceDiscretizer::Discretize(const FVector &ToConvert, int32 CellOffset,
 
 double SpaceDiscretizer::GetCellWidthAngle(double LowRangeRadius) const noexcept
 {	
-	return  360 / ((2 * PI * LowRangeRadius) / m_ComputedCellArcAtMin);
+	return  360 / ((2 * PI * LowRangeRadius) / m_ComputedCellArcWidth);
 
 
 }

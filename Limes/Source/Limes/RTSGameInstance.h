@@ -17,7 +17,7 @@ class LIMES_API URTSGameInstance : public UGameInstance
 public:
 	UFUNCTION(BlueprintCallable)
 		class ARTSStructureFactory *GetSelectedStructureFactory() { return m_pSelectedStructureFactory; }
-
+	
 	UFUNCTION(BlueprintCallable)
 		class ARTSStructureFactory *GetMainStructureFactory() { return m_pMainStructureFactory; }
 	
@@ -26,11 +26,12 @@ public:
 	void SetMainStructureFactory(class ARTSStructureFactory *pMainStructureFactory);
 
 
-	UPROPERTY(BlueprintReadOnly)
-		class ARTSStructureFactory *m_pSelectedStructureFactory;
 
 
 protected:
+	UPROPERTY()
+		class ARTSStructureFactory *m_pSelectedStructureFactory;
+
 	UPROPERTY()
 		class ARTSStructureFactory *m_pMainStructureFactory;
 	

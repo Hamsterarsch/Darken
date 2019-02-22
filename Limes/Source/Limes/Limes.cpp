@@ -8,3 +8,4 @@ IMPLEMENT_PRIMARY_GAME_MODULE( FDefaultGameModuleImpl, Limes, "Limes" );
 DEFINE_LOG_CATEGORY(RTS_StructureFactory);
 DEFINE_LOG_CATEGORY(RTS_StructurePlacement);
 DEFINE_LOG_CATEGORY(RTS_InputDebug);
+DEFINE_LOG_CATEGORY(RTS_GameInstance);

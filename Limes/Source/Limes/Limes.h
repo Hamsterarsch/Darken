@@ -7,6 +7,7 @@
 DECLARE_LOG_CATEGORY_EXTERN(RTS_StructureFactory, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(RTS_StructurePlacement, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(RTS_InputDebug, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(RTS_GameInstance, Log, All);
 
 template<class T>
 UClass *SafeLoadClassPtr(const TSoftClassPtr<T> &ClassPtr)

@@ -72,7 +72,7 @@ void ARTSPlayerEye::NotifyNewBuildingPreview(class ABuildingPreview *pNewPreview
 
 }
 
-#pragma region Input
+#pragma region Movement
 void ARTSPlayerEye::AddForwardMovement(const float AxisValue)
 {
 	if (FMath::IsNearlyZero(AxisValue))
@@ -201,6 +201,9 @@ void ARTSPlayerEye::ZoomIn()
 
 }
 
+
+#pragma endregion
+
 void ARTSPlayerEye::SetPreviewCursorPosWs(const FVector &NewPos)
 {
 	m_pCursorRoot->SetWorldLocation(NewPos);
@@ -240,11 +243,16 @@ void ARTSPlayerEye::UpdateBuildingPreviewProperties()
 	if (!pGInst)
 	{
 		return;
+	}
 
+	auto *pSelectedFactory{ pGInst->GetSelectedStructureFactory() };
+	if (!pSelectedFactory)
+	{
+		return;
 	}
 
 	//Update cursor root rotation
-	auto NewRot{ (m_pCurrentTargetFactory->GetActorLocation() - m_pBuildingPreviewCurrent->GetActorLocation()).GetSafeNormal2D().ToOrientationQuat() };
+	auto NewRot{ (pSelectedFactory->GetActorLocation() - m_pBuildingPreviewCurrent->GetActorLocation()).GetSafeNormal2D().ToOrientationQuat() };
 	m_pBuildingPreviewCurrent->SetActorRotation(NewRot);
 
 	//If placement loacation is occluded -- USE POLAR METHODS ---
@@ -301,9 +309,6 @@ void ARTSPlayerEye::DiscardBuildingPreview()
 
 }
 
-#pragma endregion
-
-
 //Protected------------------
 
 void ARTSPlayerEye::PostInitializeComponents()
@@ -334,7 +339,6 @@ void ARTSPlayerEye::BeginPlay()
 
 
 }
-
 
 #pragma region Input
 void ARTSPlayerEye::SetupPlayerInputComponent(UInputComponent *InputComponent)

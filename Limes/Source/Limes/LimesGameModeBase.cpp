@@ -20,6 +20,7 @@ void ALimesGameModeBase::PreInitializeComponents()
 	bWithEditor = true;
 #endif
 
+	/*
 	if (GetWorld() && !m_StructureFactoryClass.IsNull())
 	{
 		if (auto *pClass = SafeLoadClassPtr(m_StructureFactoryClass))
@@ -48,6 +49,7 @@ void ALimesGameModeBase::PreInitializeComponents()
 		}
 
 	}
+	*/
 
 
 }
