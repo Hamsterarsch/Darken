@@ -32,7 +32,7 @@ protected:
 
 
 	UPROPERTY(EditDefaultsOnly)
-		TSoftClassPtr<class ABuildingBase> m_PreviewedClass;
+		TSoftClassPtr<class ARadialActorBase> m_PreviewedClass;
 	
 	UPROPERTY(VisibleDefaultsOnly)
 		class UStaticMeshComponent *m_pStaticMesh;

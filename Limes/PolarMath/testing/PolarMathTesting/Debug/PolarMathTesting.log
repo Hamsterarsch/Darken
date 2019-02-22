@@ -1,3 +1,1 @@
-﻿cl : Command line warning D9035: option 'Gm' has been deprecated and will be removed in a future release
-  test.cpp
-  PolarMathTesting.vcxproj -> D:\Programme\UE4 Projects\LimesRepo\Limes\PolarMath\Debug\PolarMathTesting.exe
+﻿C:\Users\robert.bellin\Documents\LimesRepo\Limes\PolarMath\testing\PolarMathTesting\PolarMathTesting.vcxproj(140,5): error : This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is ..\..\packages\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.1.8.0\build\native\Microsoft.googletest.v140.windesktop.msvcstl.static.rt-dyn.targets.

@@ -47,20 +47,27 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		float GetMainHullCenterAngle() const;
+	
+	uint32 GetWidthInCells() const { return m_ActorWidthInCells; }
 
+	uint32 GetDepthInCells() const { return m_ActorDepthInCells; }
 
-	uint32 GetWidthInCells() const { return m_CellWidth; }
-	uint32 GetDepthInCells() const { return m_CellDepth; }
 
 protected:
+	void SetupHullVisualization();
+
+
 	UPROPERTY()
 		class ARTSStructureFactory *m_pOwningFactory;
 	
 	UPROPERTY(EditDefaultsOnly)
-		uint32 m_CellWidth;
+		uint32 m_ActorWidthInCells;
 
 	UPROPERTY(EditDefaultsOnly)
-		uint32 m_CellDepth;
+		uint32 m_ActorDepthInCells;
+
+	UPROPERTY()
+		UStaticMeshComponent *m_pHullVisualizerPlane;
 
 	PolarMath::CPolarCollision m_PolarCollision;
 

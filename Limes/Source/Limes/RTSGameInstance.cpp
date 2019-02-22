@@ -5,7 +5,12 @@
 #include "RTSStructureFactory.h"
 
 void URTSGameInstance::SetSelectedStructureFactory(class ARTSStructureFactory *pNewFactory)
-{
+{	
+	if (m_pSelectedStructureFactory)
+	{
+		m_pSelectedStructureFactory->HideBuildingPlacementGrid();
+	}
+
 	if (!pNewFactory)
 	{
 		m_pSelectedStructureFactory = m_pMainStructureFactory;
@@ -14,6 +19,8 @@ void URTSGameInstance::SetSelectedStructureFactory(class ARTSStructureFactory *p
 	}
 	UE_LOG(RTS_GameInstance, Log, TEXT("Selected structure factory is now %s"), *pNewFactory->GetName());
 	m_pSelectedStructureFactory = pNewFactory;
+
+	m_pSelectedStructureFactory->ShowBuildingPlacementGrid();
 
 
 }

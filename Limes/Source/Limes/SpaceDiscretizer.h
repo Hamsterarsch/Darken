@@ -4,38 +4,17 @@
 #include "CoreMinimal.h"
 #include "SphericalCoords.h"
 
+#include <limits>
+
+
 class LIMES_API SpaceDiscretizer
 {
 public:
 	SpaceDiscretizer() {};
+	
+	SpaceDiscretizer(FVector Origin, float RadiusMin, int32 InnerCellCount, int32 DepthFactor = 1, int32 MaxRingCount = std::numeric_limits<int32>::max());
 
-	SpaceDiscretizer(FVector Origin, float RadiusMin, int32 InnerCellCount, int32 DepthFactor = 1) :
-		m_RadiusRangeMax{},
-		m_Origin{ std::move(Origin) },
-		m_RadiusRangeMin{ RadiusMin },
-		m_InnermostCellCount{ InnerCellCount }
-	{
-		m_ComputedCellArcWidth = (PI * 2 * m_RadiusRangeMin) / m_InnermostCellCount;
-
-		auto SecondRingRadius = ((m_InnermostCellCount + 3) * m_ComputedCellArcWidth) / (2 * PI);
-		m_ComputedCellDepth = SecondRingRadius - m_RadiusRangeMin;
-
-		m_ComputedCellDepth *= DepthFactor;
-
-		UE_LOG(LogTemp, Warning, TEXT("depth: %f, 2nd: %f, circ: %f, innerCount: %i"), m_ComputedCellDepth, SecondRingRadius, m_ComputedCellArcWidth, m_InnermostCellCount);
-
-	};
-
-	SpaceDiscretizer(FVector Origin, double CellArcWidth, double CellDepth, int32 InnerCellCount, float MinRadiusMultiplier) :
-		m_Origin{ std::move(Origin) },
-		m_InnermostCellCount{ InnerCellCount },
-		m_ComputedCellDepth{ CellDepth },
-		m_ComputedCellArcWidth{ CellArcWidth }
-	{
-		m_RadiusRangeMin = ((CellArcWidth * m_InnermostCellCount) / (2 * PI)) * MinRadiusMultiplier;
-		
-
-	}
+	SpaceDiscretizer(FVector Origin, double CellArcWidth, double CellDepth, int32 MaxRingCount, int32 InnerCellCount, float MinRadiusMultiplier);
 		
 	FVector Discretize(const FVector &ToConvert, int32 CellOffset = 0, uint32 RingOffset = 0, bool bIsHalfOff = false) const;
 
@@ -45,11 +24,18 @@ public:
 
 	double GetCellArcWidth() const noexcept { return m_ComputedCellArcWidth; }
 
+	double GetOutmostRadius() const noexcept;
+
+	int32 GetMaxRingCount() const noexcept;
 
 protected:
+	double ComputeMaxRadiusRange() const noexcept;
+
 	double m_RadiusRangeMin;
 
-	double m_RadiusRangeMax;
+	int32 m_MaxRingCount;
+
+	double m_ComputedMaxRadiusRange;
 
 	int32 m_InnermostCellCount;
 

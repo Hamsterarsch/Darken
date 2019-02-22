@@ -86,14 +86,14 @@ bool CPolarCollision::HasIntersectionsWith(const CPolarCollision &Other) const
 	//trivial
 	if (m_SourceTf == Other.m_SourceTf)
 	{
-		return m_SourceHull.HasIntersectionsWith(Other.m_SourceHull, m_CellWidthAngle * .9);
+		return m_SourceHull.HasIntersectionsWith(Other.m_SourceHull);
 	}
 
 	auto vTargetHulls{ GenerateHullsForTarget(Other.m_SourceTf) };
 
 	for (auto &&Collider : vTargetHulls)
 	{
-		if (Collider.HasIntersectionsWith(Other.m_SourceHull, m_CellWidthAngle * .9))
+		if (Collider.HasIntersectionsWith(Other.m_SourceHull, m_CellWidthAngle * .15))
 		{
 			return true;
 

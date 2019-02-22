@@ -19,9 +19,9 @@ public:
 
 protected:
 	virtual void PostInitializeComponents() override;
-
-
-	UPROPERTY(EditDefaultsOnly)
-		float m_MinRadiusMultiplier;
 	
+	UPROPERTY(EditDefaultsOnly, Meta = (ClampMin="1"))
+		int32 m_MinRadiusMultiplier;
+	
+
 };

@@ -24,7 +24,7 @@ void ARTSSideStructureFactory::PostInitializeComponents()
 		return;
 	}
 
-	//m_SpaceDiscretizer = SpaceDiscretizer{ GetActorLocation(), pMainFactory->GetCellArcWidth(), pMainFactory->GetCellDepth(), }
+	m_SpaceDiscretizer = SpaceDiscretizer{ GetActorLocation(), pMainFactory->GetCellArcWidth(), pMainFactory->GetCellDepth(), m_MaxRingCount, m_InnermostCellcount, static_cast<float>(m_MinRadiusMultiplier) };
 
 
 }

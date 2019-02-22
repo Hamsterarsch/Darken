@@ -5,7 +5,6 @@
 #include "BuildingPreview.h"
 
 AMousePlayerController::AMousePlayerController(const FObjectInitializer &Initializer) :
-	m_Discretizer{ {0,0,0}, 600, 30, 3 },
 	Super(Initializer)
 {
 	bShowMouseCursor = true;
@@ -14,6 +13,8 @@ AMousePlayerController::AMousePlayerController(const FObjectInitializer &Initial
 		
 	//UE_LOG(LogTemp, Warning, TEXT("azm: %f, depth: %f"), m_Discretizer.GetAzimutDeg(), m_Discretizer.GetCellDepth());
 	m_pCursorDummy = CreateDefaultSubobject<USceneComponent>(TEXT("CursorDummy"));
+	auto Vec{ FVector{ 0,0,0 } };
+	m_Discretizer = SpaceDiscretizer{ Vec, 600, 30, 3 };
 	/*
 	static ConstructorHelpers::FObjectFinder<UBlueprint> LoadedBP_RTSSpectator(TEXT("Blueprint'/Game/Blueprints/BP_RTSSpectatorPawn.BP_RTSSpectatorPawn'"));
 	if (LoadedBP_RTSSpectator.Object)
@@ -162,14 +163,14 @@ void AMousePlayerController::Tick(float DeltaSeconds)
 
 			if (m_BuildingState == EBuildingState::Invalid)
 			{
-				m_BuildingState = HitResult.GetActor()->IsA<ABuildingBase>() ? EBuildingState::Invalid : EBuildingState::InPlacement;
+				m_BuildingState = HitResult.GetActor()->IsA<ARadialActorBase>() ? EBuildingState::Invalid : EBuildingState::InPlacement;
 
 			}
 
 		}
 		else
 		{
-			if (HitResult.GetActor()->IsA<ABuildingBase>())
+			if (HitResult.GetActor()->IsA<ARadialActorBase>())
 			{
 				m_BuildingState = EBuildingState::Invalid;
 
@@ -185,7 +186,7 @@ void AMousePlayerController::Tick(float DeltaSeconds)
 
 		if (auto *p = HitResult.GetActor())
 		{			
-			UE_LOG(LogTemp, Log, TEXT("is building: %i, name: %s"), p->IsA<ABuildingBase>(), *p->GetName());
+			UE_LOG(LogTemp, Log, TEXT("is building: %i, name: %s"), p->IsA<ARadialActorBase>(), *p->GetName());
 		
 		}
 		
@@ -505,7 +506,7 @@ void AMousePlayerController::PlaceBuilding()
 	{
 		
 		auto pClassToSpawn = m_pCurrentBuildingPreview->GetPreviewedClass();
-		GetWorld()->SpawnActor<ABuildingBase>(pClassToSpawn, m_pCurrentBuildingPreview->GetActorTransform());
+		GetWorld()->SpawnActor<ARadialActorBase>(pClassToSpawn, m_pCurrentBuildingPreview->GetActorTransform());
 		m_pCurrentBuildingPreview->Destroy();// DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		
 

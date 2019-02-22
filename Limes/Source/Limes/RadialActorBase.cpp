@@ -11,13 +11,18 @@
 ARadialActorBase::ARadialActorBase() :
 	m_bIsCollisionInitialized{ false }
 {	
+	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("PolarRoot")));
+	m_pHullVisualizerPlane = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PolarVisualizerPlane"));
+	m_pHullVisualizerPlane->SetupAttachment(GetRootComponent());
+
+
 }
 
 
 void ARadialActorBase::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
-
+	
 	
 
 }
@@ -41,6 +46,7 @@ void ARadialActorBase::InitializePolarCollision(ARTSStructureFactory *pNewFactor
 	m_bIsCollisionInitialized = true;
 
 	OnCollisionInitialized();
+	SetupHullVisualization();
 
 
 }
@@ -119,4 +125,30 @@ float ARadialActorBase::GetMainHullCenterAngle() const
 
 }
 
+
+//Protected----------------------
+
+void ARadialActorBase::SetupHullVisualization()
+{	
+	auto *pMaterial{ m_pHullVisualizerPlane->GetMaterial(0) };
+	if (!pMaterial)
+	{
+		return;
+	}
+	
+	auto *pDynMat{ m_pHullVisualizerPlane->CreateDynamicMaterialInstance(0, pMaterial) };
+
+	FLinearColor CenterAsColor{ static_cast<float>(m_PolarCollision.GetCartesianCenter().X), static_cast<float>(m_PolarCollision.GetCartesianCenter().Y), 0, 0 };
+	pDynMat->SetVectorParameterValue(TEXT("CartesianCenter"), CenterAsColor);
+	pDynMat->SetScalarParameterValue(TEXT("MinRadius"), static_cast<float>(m_PolarCollision.GetMainHullMinRadius()));
+	pDynMat->SetScalarParameterValue(TEXT("MinDepth"), static_cast<float>(m_PolarCollision.GetMainHullDepth()));
+	pDynMat->SetScalarParameterValue(TEXT("HalfWidthAngle"), static_cast<float>(m_PolarCollision.GetMainHullHalfWidthAngle()));
+	pDynMat->SetScalarParameterValue(TEXT("CenterAngle"), static_cast<float>(m_PolarCollision.GetMainHullCenterAngle()));
+		
+	m_pHullVisualizerPlane->SetRelativeLocation({ 0, 0, 10 });
+	auto ScaleBase{ m_ActorDepthInCells > m_ActorWidthInCells ? m_ActorDepthInCells : m_ActorWidthInCells };
+	m_pHullVisualizerPlane->SetWorldScale3D({ static_cast<float>(ScaleBase) * 3, static_cast<float>(ScaleBase * 3), 0 });
+
+
+}
 

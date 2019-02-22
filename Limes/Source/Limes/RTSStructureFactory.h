@@ -45,47 +45,50 @@ public:
 
 	double GetCellArcWidth() const;
 
-	void AddChildBuilding(class ABuildingBase *pNewChild);
+	void AddChildBuilding(class ARadialActorBase *pNewChild);
 
-	void RemoveChildBuilding(class ABuildingBase *pChildToRemove);
+	void RemoveChildBuilding(class ARadialActorBase *pChildToRemove);
 
 	bool HasIntersectionsWithChildBuildings(class ARadialActorBase *pBuildingToTest) const;
 
+	void ShowBuildingPlacementGrid();
 
-	UPROPERTY(EditDefaultsOnly)
-		uint32 m_RadiusInCells;
-	   	
+	void HideBuildingPlacementGrid();
+
 
 protected:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void PostInitializeComponents() override;
 
+	virtual void BeginPlay() override;
+
 	void AddCollisionComponents(ARadialActorBase *pActor) const;
 
-	void SetUpGridVisualization();
+	void SetupGridVisualization();
+
+
+	UPROPERTY(VisibleDefaultsOnly)
+		UStaticMeshComponent *m_pVisualizerPlane;
 	
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, Category="Factory")
 		bool m_bIsMainFactory;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category="Factory|Grid")
 		int32 m_InnermostCellcount;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(EditDefaultsOnly, Category = "Factory|Grid")
 		int32 m_MaxRingCount;
 	   	
-	UPROPERTY(EditDefaultsOnly, Meta = ( EditCondition = "m_bIsMainFactoy"))
+	UPROPERTY(EditDefaultsOnly, Category = "Factory|Grid", Meta = (EditCondition = "m_bIsMainFactoy"))
 		float m_MinRadius;
 
-	UPROPERTY(EditDefaultsOnly, Meta = (EditCondition = "m_bIsMainFactory"))
+	UPROPERTY(EditDefaultsOnly, Category = "Factory|Grid", Meta = (EditCondition = "m_bIsMainFactory"))
 		int32 m_CellDepthMultiplier;
 
 	UPROPERTY()
-		TArray<ABuildingBase *> m_apChildBuildings;
-
-	UPROPERTY()
-		UStaticMeshComponent *m_pVisualizerPlane;
-	
+		TArray<ARadialActorBase *> m_apChildBuildings;
+		
 	PolarMath::CPolarTransform m_PolarTransform;
 
 	SpaceDiscretizer m_SpaceDiscretizer;
