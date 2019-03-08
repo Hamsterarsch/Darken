@@ -91,7 +91,7 @@ namespace PolarMath
 
 		bool HasIntersectionsWith(const CPolarCollider &Other, double AngleBias = 0) const
 		{
-			double SummedAngleBias{ 5e-6 + AngleBias};
+			double FinalAngleBias{ AngleBias *.125 };
 			constexpr double RadiusBias{ 5e-4 };
 
 			auto PolarDist{ GetShortestAngleBetween(this->GetCenterAngle(), Other.GetCenterAngle()) };
@@ -102,7 +102,7 @@ namespace PolarMath
 				this->GetRadiusMax() <= Other.GetRadiusMin() + RadiusBias
 				|| this->GetRadiusMin() >= Other.GetRadiusMax() - RadiusBias
 				)
-				|| PolarDist + SummedAngleBias >= Other.GetHalfAngle() + this->GetHalfAngle()
+				|| PolarDist + FinalAngleBias >= Other.GetHalfAngle() + this->GetHalfAngle()
 			)
 			{
 				return false;

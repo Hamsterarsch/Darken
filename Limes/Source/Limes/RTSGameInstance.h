@@ -6,6 +6,24 @@
 #include "Engine/GameInstance.h"
 #include "RTSGameInstance.generated.h"
 
+USTRUCT(BlueprintType)
+struct FRTSGlobalData
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere)
+		class UMaterialInterface *pMaterialBuildingPlaceable;
+
+	UPROPERTY(EditAnywhere)
+		class UMaterialInterface *pMaterialBuildingNonPlaceable;
+
+	UPROPERTY()
+		class UStaticMesh *pPlaneMesh;
+
+
+};
+
 /**
  * 
  */
@@ -19,21 +37,26 @@ public:
 		class ARTSStructureFactory *GetSelectedStructureFactory() { return m_pSelectedStructureFactory; }
 	
 	UFUNCTION(BlueprintCallable)
-		class ARTSStructureFactory *GetMainStructureFactory() { return m_pMainStructureFactory; }
+		class ARTSMainStructureFactory *GetMainStructureFactory() { return m_pMainStructureFactory; }
+	
+	const FRTSGlobalData &GetGlobalData() const noexcept;
 	
 	void SetSelectedStructureFactory(class ARTSStructureFactory *pNewFactory);
 
-	void SetMainStructureFactory(class ARTSStructureFactory *pMainStructureFactory);
+	void SetMainStructureFactory(class ARTSMainStructureFactory *pMainStructureFactory);
 
-
+	virtual void Init() override;
 
 
 protected:
+	UPROPERTY(EditDefaultsOnly)
+		FRTSGlobalData m_GlobalData;
+
 	UPROPERTY()
 		class ARTSStructureFactory *m_pSelectedStructureFactory;
 
 	UPROPERTY()
-		class ARTSStructureFactory *m_pMainStructureFactory;
+		class ARTSMainStructureFactory *m_pMainStructureFactory;
 	
 	
 };

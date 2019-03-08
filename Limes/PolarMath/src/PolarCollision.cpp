@@ -8,45 +8,51 @@
 
 using namespace PolarMath;
 
-CPolarCollision::CPolarCollision(const CPolarCollider &Hull, const CPolarTransform &Source, double CellWidthAngle) :
-	m_SourceHull{ Hull },
+CPolarCollision::CPolarCollision(const CPolarCollider &Hull, const CPolarTransform &Source, double HalfCellWidthArc) :
+	m_lSourceHulls{ Hull },
 	m_SourceTf{ Source },
-	m_CellWidthAngle{ CellWidthAngle }
+	m_HalfCellWidthArc{ HalfCellWidthArc }
 {
 }
 
-std::vector<class CPolarCollider> CPolarCollision::GenerateHullsForTarget(const CPolarTransform &Target) const
+CPolarCollision::CPolarCollision(std::forward_list<CPolarCollider>&& mov_Hulls, const CPolarTransform& Source, double HalfCellWidthArc) :
+	m_lSourceHulls{ std::move(mov_Hulls) },
+	m_SourceTf{ Source },
+	m_HalfCellWidthArc{ HalfCellWidthArc }
+{
+}
+
+std::forward_list<CPolarCollider> CPolarCollision::GenerateHullsForTarget(
+	const CPolarTransform& Target, const CPolarCollider& SourceHull) const
 {
 	//Check for bad ratio
-	auto DepthCircRatio{ m_SourceHull.GetDepth() / (m_SourceHull.GetHalfCircumference() * 2) };
-	auto CircDepthRatio{ m_SourceHull.GetHalfCircumference() * 2 / m_SourceHull.GetDepth() };
+	auto DepthCircRatio{ SourceHull.GetDepth() / (SourceHull.GetHalfCircumference() * 2) };
+	auto CircDepthRatio{ SourceHull.GetHalfCircumference() * 2 / SourceHull.GetDepth() };
 	auto BiggestRatio{ std::max(DepthCircRatio, CircDepthRatio) };
 
 	//Determine slice count
 	auto MaxSliceCount{ static_cast<unsigned int>(std::floor(BiggestRatio)) };	
 	MaxSliceCount = std::max(1u, MaxSliceCount);
 
-	std::vector<CPolarCollider> OutHulls(MaxSliceCount);
+	std::forward_list<CPolarCollider> lOutHulls(MaxSliceCount);
 	//simple case
 	if (MaxSliceCount <= 1)
 	{
-		OutHulls.at(0) = m_SourceTf.TransformColliderTo(Target, m_SourceHull);
-		return OutHulls;
-
-
+		lOutHulls.push_front( m_SourceTf.TransformColliderTo(Target, SourceHull) );
+		return lOutHulls;		
 	}
 		
 	//get source domain bounds
 	constexpr unsigned int RightMin{ 0 }, LeftMin{ 1 }, RightMax{ 2 }, LeftMax{ 3 };
 	SPolarPoint SourceBounds[4];
-	SourceBounds[RightMax] = m_SourceHull.GetRightMin();
-	SourceBounds[LeftMax] = m_SourceHull.GetLeftMin();
+	SourceBounds[RightMax] = SourceHull.GetRightMin();
+	SourceBounds[LeftMax] = SourceHull.GetLeftMin();
 
-	SPolarPoint SourceCenterMid{ m_SourceHull.GetCenterMid() };
+	SPolarPoint SourceCenterMid{ SourceHull.GetCenterMid() };
 
 	//get depth/angle increment per slice
-	bool bSlicingAlongDepth{ m_SourceHull.GetDepth() > m_SourceHull.GetHalfCircumference() * 2 };
-	double Increment = bSlicingAlongDepth ? m_SourceHull.GetDepth() / MaxSliceCount : m_SourceHull.GetHalfAngle() * 2 / MaxSliceCount;
+	bool bSlicingAlongDepth{ SourceHull.GetDepth() > SourceHull.GetHalfCircumference() * 2 };
+	double Increment = bSlicingAlongDepth ? SourceHull.GetDepth() / MaxSliceCount : SourceHull.GetHalfAngle() * 2 / MaxSliceCount;
 
 	//generate hulls
 	for (unsigned int HullIndex{ 0 }; HullIndex < MaxSliceCount; ++HullIndex)
@@ -72,30 +78,74 @@ std::vector<class CPolarCollider> CPolarCollision::GenerateHullsForTarget(const 
 		//transform to target domain
 		SPolarPoint TargetPoints[4];
 		m_SourceTf.TranformPointsTo(Target, SourceBounds, TargetPoints);
-		OutHulls.at(HullIndex) = CPolarCollider{ TargetPoints, m_SourceTf.TransformPointTo(Target, SourceCenterMid) };
-
-
+		lOutHulls.push_front( CPolarCollider{ TargetPoints, m_SourceTf.TransformPointTo(Target, SourceCenterMid) } );
+		
 	}
-	return OutHulls;
+	return lOutHulls;
 
 
 }
 
-bool CPolarCollision::HasIntersectionsWith(const CPolarCollision &Other) const
+std::forward_list<CPolarCollider> CPolarCollision::GenerateHullsForTarget(const CPolarTransform& Target) const
 {
-	//trivial
+	std::forward_list<CPolarCollider> lTargetHulls{};
+
+	for(auto &&SourceHull : m_lSourceHulls)
+	{
+		lTargetHulls.splice_after(lTargetHulls.end(), GenerateHullsForTarget(Target, SourceHull));
+
+	}
+	return lTargetHulls;
+
+
+}
+
+bool CPolarCollision::HasIntersectionsWith(const CPolarCollision& Other, CPolarCollider *out_pFirstHit) const
+{
+	//trivial : same systems
 	if (m_SourceTf == Other.m_SourceTf)
 	{
-		return m_SourceHull.HasIntersectionsWith(Other.m_SourceHull);
+		//trivial: only one source hull exists in both collisions
+		if (this->HasSingleSourceHull() && Other.HasSingleSourceHull())
+		{
+			auto HalfCellWidthAngle{ 360 / ((m_lSourceHulls.front().GetRadiusMin() * PolarMath_PI * 2) / m_HalfCellWidthArc) };
+			return m_lSourceHulls.front().HasIntersectionsWith(Other.m_lSourceHulls.front(), HalfCellWidthAngle);
+		}
+
+		for (auto &&ThisHull : this->m_lSourceHulls)
+		{
+			for (auto &&OtherHull : Other.m_lSourceHulls)
+			{
+				auto HalfCellWidthAngle{ 360 / ((ThisHull.GetRadiusMin() * PolarMath_PI * 2) / m_HalfCellWidthArc) };
+				if (ThisHull.HasIntersectionsWith(OtherHull, HalfCellWidthAngle))
+				{
+					if(out_pFirstHit)
+					{
+						*out_pFirstHit = ThisHull;						
+					}
+					return true;
+				}
+
+			}
+
+		}
+		return false;
 	}
 
-	auto vTargetHulls{ GenerateHullsForTarget(Other.m_SourceTf) };
-
-	for (auto &&Collider : vTargetHulls)
+	auto lHullsInTarget{ GenerateHullsForTarget(Other.m_SourceTf) };
+	for (auto &&ThisHull : lHullsInTarget)
 	{
-		if (Collider.HasIntersectionsWith(Other.m_SourceHull, m_CellWidthAngle * .15))
+		for (auto &&OtherHull : Other.m_lSourceHulls)
 		{
-			return true;
+			auto HalfCellWidthAngle{ 360 / ((ThisHull.GetRadiusMin() * PolarMath_PI * 2) / m_HalfCellWidthArc) };
+			if (ThisHull.HasIntersectionsWith(OtherHull, HalfCellWidthAngle))
+			{
+				if (out_pFirstHit)
+				{
+					*out_pFirstHit = OtherHull;
+				}
+				return true;
+			}
 
 		}
 
@@ -105,44 +155,51 @@ bool CPolarCollision::HasIntersectionsWith(const CPolarCollision &Other) const
 
 }
 
+bool CPolarCollision::HasSingleSourceHull() const
+{
+	return !m_lSourceHulls.empty() && m_lSourceHulls.begin() == m_lSourceHulls.end();
+
+
+}
+
 double PolarMath::CPolarCollision::GetMainHullDepth() const noexcept
 {
-	return m_SourceHull.GetDepth();
+	return m_lSourceHulls.front().GetDepth();
 
 
 }
 
 double PolarMath::CPolarCollision::GetMainHullRightAngle() const noexcept
 {
-	return m_SourceHull.GetRightMin().Angle;
+	return m_lSourceHulls.front().GetRightMin().Angle;
 
 
 }
 
 double PolarMath::CPolarCollision::GetMainHullLeftAngle() const noexcept
 {
-	return m_SourceHull.GetLeftMin().Angle;
+	return m_lSourceHulls.front().GetLeftMin().Angle;
 
 
 }
 
 double PolarMath::CPolarCollision::GetMainHullMinRadius() const noexcept
 {
-	return m_SourceHull.GetLeftMin().Radius;
+	return m_lSourceHulls.front().GetLeftMin().Radius;
 
 
 }
 
 double PolarMath::CPolarCollision::GetMainHullCenterAngle() const noexcept
 {
-	return m_SourceHull.GetCenterAngle();
+	return m_lSourceHulls.front().GetCenterAngle();
 
 
 }
 
 double PolarMath::CPolarCollision::GetMainHullHalfWidthAngle() const noexcept
 {
-	return m_SourceHull.GetHalfAngle();
+	return m_lSourceHulls.front().GetHalfAngle();
 
 
 }

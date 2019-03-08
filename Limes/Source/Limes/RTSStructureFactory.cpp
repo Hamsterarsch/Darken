@@ -14,19 +14,44 @@ constexpr auto ECCPlacable = ECC_GameTraceChannel1;
 constexpr auto ECCNonPlacable = ECC_GameTraceChannel2;
 
 ARTSStructureFactory::ARTSStructureFactory() :
-	m_bIsMainFactory{ false },
-	m_CellDepthMultiplier{ 3 },
-	m_InnermostCellcount{ 30 },
-	m_MinRadius{ 600 }
+	m_InnermostCellcount{ 30 }
 {
 	PrimaryActorTick.bCanEverTick = true;
-	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("Root")));
 
 	m_pVisualizerPlane = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("VisualizerPlane"));
 	m_pVisualizerPlane->SetupAttachment(GetRootComponent());
+	m_pVisualizerPlane->SetRelativeLocation({ 0, 0, 5 });
 	m_pVisualizerPlane->SetVisibility(false);
 	m_pVisualizerPlane->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	
+
+}
+
+
+void ARTSStructureFactory::InstantiatePreviewBuilding(const TSoftClassPtr<class ABuildingBase> &TypeToPreview)
+{
+	UE_LOG(RTS_StructureFactory, Log, TEXT("Instantiating preview building: %s"), *TypeToPreview.GetAssetName());
+	
+	auto *pNewPreview{ ABuildingPreview::SpawnNewBuildingPreview(GetWorld(), TypeToPreview) };
+	if (!pNewPreview)
+	{
+		UE_LOG(RTS_StructureFactory, Error, TEXT("Unable to instantiate preview building"));
+		return;
+
+	}
+
+	if (auto *pPlayer = Cast<ARTSPlayerEye>(GetGameInstance()->GetFirstLocalPlayerController(GetWorld())->GetPawn()))
+	{
+		pPlayer->NotifyNewBuildingPreview(pNewPreview, this);
+
+	}
+	else
+	{
+		UE_LOG(RTS_StructureFactory, Error, TEXT("Unable to notify rts player"));
+		pNewPreview->Destroy();
+
+	}
+
 
 }
 
@@ -40,9 +65,9 @@ bool ARTSStructureFactory::TryCommitPreviewBuilding(ABuildingPreview *pPreviewBu
 		auto *pActor = GetWorld()->SpawnActor(pClass, &Transform);
 
 		auto *pBuildingActor = Cast<ARadialActorBase>(pActor);
-		pBuildingActor->InitializePolarCollision(this);
-
-		if (HasIntersectionsWithChildBuildings(pBuildingActor))
+		
+		pPreviewBuilding->InitMinimumCollision(this);
+		if (HasIntersectionsWithChildBuildings(pPreviewBuilding))
 		{
 			pActor->Destroy();
 			return false;
@@ -52,6 +77,7 @@ bool ARTSStructureFactory::TryCommitPreviewBuilding(ABuildingPreview *pPreviewBu
 			UE_LOG(RTS_StructureFactory, Log, TEXT("Commiting preview building %s"), *pPreviewBuilding->GetName());
 			//AddCollisionComponents(pRadialActor);
 			//pActor->DrawDebugComponents();
+			pBuildingActor->InitExpandedCollision(this);
 			AddChildBuilding(pBuildingActor);
 			pPreviewBuilding->Destroy();
 			return true;
@@ -94,70 +120,6 @@ bool ARTSStructureFactory::IsPlacableAtPosition(ARadialActorBase *pActor) const
 
 }
 
-void ARTSStructureFactory::InstantiatePreviewBuilding(TSoftClassPtr<class ABuildingPreview> Type)
-{	
-	UE_LOG(RTS_StructureFactory, Log, TEXT("Instantiating preview building: %s"), *Type.GetAssetName());
-	ABuildingPreview *pNewPreview{ nullptr };
-	if (auto pClass = SafeLoadClassPtr(Type))
-	{
-		pNewPreview = GetWorld()->SpawnActor<ABuildingPreview>(pClass);
-
-	}
-	else
-	{
-		UE_LOG(RTS_StructureFactory, Error, TEXT("Unable to load simple home instantiate preview building class"));
-
-	}
-
-
-	if (!pNewPreview)
-	{
-		UE_LOG(RTS_StructureFactory, Error, TEXT("Unable to instantiate preview building"));
-		return;
-
-	}
-
-	if (auto *pPlayer = Cast<ARTSPlayerEye>(GetGameInstance()->GetFirstLocalPlayerController(GetWorld())->GetPawn()))
-	{
-		pPlayer->NotifyNewBuildingPreview(pNewPreview, this);
-
-	}
-	else
-	{
-		UE_LOG(RTS_StructureFactory, Error, TEXT("Unable to notify rts player"));
-		pNewPreview->Destroy();
-
-	}
-
-	
-}
-
-
-PolarMath::CPolarTransform ARTSStructureFactory::GetPolarTransform() const
-{
-	return m_PolarTransform;
-
-}
-
-double ARTSStructureFactory::GetCellWidthAngle(double LowRangeRadius) const
-{
-	return m_SpaceDiscretizer.GetCellWidthAngle(LowRangeRadius);
-
-
-}
-
-double ARTSStructureFactory::GetCellDepth() const
-{
-	return m_SpaceDiscretizer.GetCellDepth();
-
-
-}
-
-double ARTSStructureFactory::GetCellArcWidth() const
-{
-	return m_SpaceDiscretizer.GetCellArcWidth();
-}
-
 void ARTSStructureFactory::AddChildBuilding(ARadialActorBase *pNewChild)
 {
 	m_apChildBuildings.AddUnique(pNewChild);
@@ -188,6 +150,21 @@ bool ARTSStructureFactory::HasIntersectionsWithChildBuildings(class ARadialActor
 
 }
 
+bool ARTSStructureFactory::HasIntersectionsWithChildBuildings(const PolarMath::CPolarCollider &HullToTest, PolarMath::CPolarCollider *out_pFirstHit) const
+{
+	for(auto &&ChildActor : m_apChildBuildings)
+	{
+		if(ChildActor->HasIntersectionsWith(HullToTest, out_pFirstHit))
+		{
+			return true;
+		}
+
+	}
+	return false;
+
+
+}
+
 void ARTSStructureFactory::ShowBuildingPlacementGrid()
 {
 	m_pVisualizerPlane->SetVisibility(true);
@@ -202,45 +179,22 @@ void ARTSStructureFactory::HideBuildingPlacementGrid()
 
 }
 
-//Protected--------------------
-
-void ARTSStructureFactory::Tick(float DeltaTime)
+double ARTSStructureFactory::GetCellWidthAngle(double LowRangeRadius) const
 {
-	Super::Tick(DeltaTime);
+	return m_SpaceDiscretizer.GetCellWidthAngle(LowRangeRadius);
+
 
 }
+
+
+//Protected--------------------
 
 void ARTSStructureFactory::PostInitializeComponents()
 {
 	Super::PostInitializeComponents();
 
-	auto ActorPosWs{ GetActorLocation() };
-	m_PolarTransform = PolarMath::CPolarTransform{ ActorPosWs.X, ActorPosWs.Y };
-	
-	if (m_bIsMainFactory)
-	{
-		m_SpaceDiscretizer = SpaceDiscretizer{ ActorPosWs, m_MinRadius, m_InnermostCellcount, m_CellDepthMultiplier };
-
-	}
-
-	auto *pGInst{ Cast<URTSGameInstance>(GetGameInstance()) };
-	if (m_bIsMainFactory && pGInst )
-	{
-		pGInst->SetMainStructureFactory(this);
-
-		
-	}
-
 	OnClicked.AddDynamic(this, &ARTSStructureFactory::OnActorClickedEvent);
 
-
-}
-
-void ARTSStructureFactory::BeginPlay()
-{
-	Super::BeginPlay();
-
-	SetupGridVisualization();
 
 }
 
@@ -286,16 +240,24 @@ void ARTSStructureFactory::SetupGridVisualization()
 	auto *pDynMat = m_pVisualizerPlane->CreateDynamicMaterialInstance (0, pMaterial);
 	
 	pDynMat->SetScalarParameterValue(TEXT("CellDepth"), static_cast<float>(m_SpaceDiscretizer.GetCellDepth()));
-	pDynMat->SetScalarParameterValue(TEXT("InnerCellCount"), m_InnermostCellcount);
-	pDynMat->SetScalarParameterValue(TEXT("MinRadius"), m_MinRadius);
+	pDynMat->SetScalarParameterValue(TEXT("InnerCellCount"), m_SpaceDiscretizer.GetInnerCellCount());
+	pDynMat->SetScalarParameterValue(TEXT("MinRadius"), m_SpaceDiscretizer.GetInnermostRadius());
+	
+	pDynMat->SetScalarParameterValue(TEXT("MaxRingCount"), m_SpaceDiscretizer.GetMaxRingCount() < 30 ? 30 : m_SpaceDiscretizer.GetMaxRingCount());
 
-	pDynMat->SetScalarParameterValue(TEXT("MaxRingCount"), m_MaxRingCount < 30 ? 30 : m_MaxRingCount);
 
-
-	FLinearColor CenterPos{ static_cast<float>(m_PolarTransform.GetCartesianPos().X), static_cast<float>(m_PolarTransform.GetCartesianPos().Y), 0, 0 };
+	FLinearColor CenterPos{ m_SpaceDiscretizer.GetCartesianOrigin().X, m_SpaceDiscretizer.GetCartesianOrigin().Y, 0, 0 };
 	pDynMat->SetVectorParameterValue(TEXT("CenterPosWs"), CenterPos);
 	
-	auto PlaneScale = static_cast<float>(std::min(1000, FMath::CeilToInt(m_SpaceDiscretizer.GetOutmostRadius() / 50)));
+	float PlaneScale;
+	if (m_SpaceDiscretizer.GetMaxRingCount() < 0)
+	{
+		PlaneScale = 1000;
+	}
+	else
+	{
+		PlaneScale = FMath::CeilToInt(m_SpaceDiscretizer.GetOutmostRadius() / 50);
+	}
 	m_pVisualizerPlane->SetWorldScale3D({ PlaneScale, PlaneScale, 1 });
 	m_pVisualizerPlane->SetRelativeLocation({ 0, 0, 5 });
 

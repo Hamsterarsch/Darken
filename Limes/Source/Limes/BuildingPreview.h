@@ -4,15 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "RadialActorBase.h"
+#include "BuildingBase.h"
 #include "BuildingPreview.generated.h"
 
 UCLASS()
-class LIMES_API ABuildingPreview : public ARadialActorBase
+class LIMES_API ABuildingPreview : public ABuildingBase
 {
 	GENERATED_BODY()
 	
-public:	
+public:
+	static ABuildingPreview *SpawnNewBuildingPreview(class UWorld *pWorld, const TSoftClassPtr<ABuildingBase> &PreviewedBuilding);
+
+	//todo: recheck for protected ctors
 	ABuildingPreview();
 	
 	UFUNCTION(BlueprintCallable)
@@ -24,24 +27,16 @@ public:
 
 
 protected:
-	virtual void BeginPlay() override;
-
-	virtual void Tick(float DeltaTime) override;
-
 	virtual void PostInitializeComponents() override;
 
+	UPROPERTY()
+		class UMaterialInterface *m_pMaterialPlacable;
 
-	UPROPERTY(EditDefaultsOnly)
-		TSoftClassPtr<class ARadialActorBase> m_PreviewedClass;
+	UPROPERTY()
+		class UMaterialInterface *m_pMaterialNonPlacable;
 	
-	UPROPERTY(VisibleDefaultsOnly)
-		class UStaticMeshComponent *m_pStaticMesh;
+	UPROPERTY()
+		UClass *m_pPreviewedClass;
 
-	UPROPERTY(EditDefaultsOnly)
-		TSoftObjectPtr <UMaterialInterface> m_MaterialPlacable;
 
-	UPROPERTY(EditDefaultsOnly)
-		TSoftObjectPtr <UMaterialInterface> m_MaterialNonPlacable;
-	
-	
 };

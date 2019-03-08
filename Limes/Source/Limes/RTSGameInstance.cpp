@@ -2,7 +2,15 @@
 
 #include "RTSGameInstance.h"
 #include "Limes.h"
-#include "RTSStructureFactory.h"
+#include "RTSMainStructureFactory.h"
+#include "Paths.h"
+
+const FRTSGlobalData& URTSGameInstance::GetGlobalData() const noexcept
+{
+	return m_GlobalData;
+
+
+}
 
 void URTSGameInstance::SetSelectedStructureFactory(class ARTSStructureFactory *pNewFactory)
 {	
@@ -25,7 +33,7 @@ void URTSGameInstance::SetSelectedStructureFactory(class ARTSStructureFactory *p
 
 }
 
-void URTSGameInstance::SetMainStructureFactory(class ARTSStructureFactory *pMainStructureFactory)
+void URTSGameInstance::SetMainStructureFactory(ARTSMainStructureFactory *pMainStructureFactory)
 {
 	if (!m_pMainStructureFactory)
 	{
@@ -33,6 +41,19 @@ void URTSGameInstance::SetMainStructureFactory(class ARTSStructureFactory *pMain
 		SetSelectedStructureFactory(m_pMainStructureFactory);
 	}
 
+
+}
+
+void URTSGameInstance::Init()
+{
+	Super::Init();
+
+	m_GlobalData.pPlaneMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane"));
+	if (!m_GlobalData.pPlaneMesh)
+	{
+		UE_LOG(RTS_GameInstance, Error, TEXT("Could not load plane mesh from path"));
+	}
+	
 
 }
 

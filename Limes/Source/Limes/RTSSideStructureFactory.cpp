@@ -3,16 +3,28 @@
 #include "RTSSideStructureFactory.h"
 #include "Limes.h"
 #include "RTSGameInstance.h"
+#include "RTSMainStructureFactory.h"
 
 
 
 
-void ARTSSideStructureFactory::PostInitializeComponents()
+ARTSSideStructureFactory::ARTSSideStructureFactory() 
 {
-	Super::PostInitializeComponents();
+}
+
+void ARTSSideStructureFactory::BeginPlay()
+{
+	Super::BeginPlay();
+
+
+}
+
+void ARTSSideStructureFactory::OnCollisionInitialized()
+{
+	Super::OnCollisionInitialized();
 
 	auto *pGInst{ Cast<URTSGameInstance>(GetGameInstance()) };
-	ARTSStructureFactory *pMainFactory{ nullptr };
+	ARTSMainStructureFactory *pMainFactory{ nullptr };
 	if (pGInst)
 	{
 		pMainFactory = pGInst->GetMainStructureFactory();
@@ -24,7 +36,8 @@ void ARTSSideStructureFactory::PostInitializeComponents()
 		return;
 	}
 
-	m_SpaceDiscretizer = SpaceDiscretizer{ GetActorLocation(), pMainFactory->GetCellArcWidth(), pMainFactory->GetCellDepth(), m_MaxRingCount, m_InnermostCellcount, static_cast<float>(m_MinRadiusMultiplier) };
+	m_SpaceDiscretizer = SpaceDiscretizer{ m_pCenteredRoot->GetComponentLocation(), pMainFactory->GetCellWidthArc(), pMainFactory->GetCellDepth(), m_MaxRingCount, m_InnermostCellcount };
+	SetupGridVisualization();
 
 
 }

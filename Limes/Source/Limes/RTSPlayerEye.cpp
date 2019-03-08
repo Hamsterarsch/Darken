@@ -12,7 +12,8 @@
 #include "Limes.h"
 #include "BuildingPreview.h"
 #include "RTSGameInstance.h"
-#include "RTSStructureFactory.h"
+#include "RTSMainStructureFactory.h"
+
 
 
 const FName ARTSPlayerEye::s_AxisMouseX{ TEXT("MouseX") };
@@ -65,6 +66,7 @@ void ARTSPlayerEye::NotifyNewBuildingPreview(class ABuildingPreview *pNewPreview
 	
 	m_pBuildingPreviewCurrent = pNewPreview;
 	m_pBuildingPreviewCurrent->AttachToComponent(m_pCursorRoot, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	m_pBuildingPreviewCurrent->SetActorRelativeLocation({ 0,0,0 });
 
 	m_pCurrentTargetFactory = pFactory;
 	m_PlacementState.HandleInput(EAbstractInputEvent::PlaceBuilding_Start);
@@ -252,7 +254,7 @@ void ARTSPlayerEye::UpdateBuildingPreviewProperties()
 	}
 
 	//Update cursor root rotation
-	auto NewRot{ (pSelectedFactory->GetActorLocation() - m_pBuildingPreviewCurrent->GetActorLocation()).GetSafeNormal2D().ToOrientationQuat() };
+	auto NewRot{ (pSelectedFactory->GetCenteredRootLocation() - m_pBuildingPreviewCurrent->GetActorLocation()).GetSafeNormal2D().ToOrientationQuat() };
 	m_pBuildingPreviewCurrent->SetActorRotation(NewRot);
 
 	//If placement loacation is occluded -- USE POLAR METHODS ---

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "SpaceDiscretizer.h"
-#include "RadialActorBase.h"
+#include "BuildingBase.h"
 #include "PolarTransform.h"
 #include "RTSStructureFactory.generated.h"
 
@@ -21,29 +21,21 @@ enum class EBuildingTypes : uint8
 
 
 UCLASS(Abstract)
-class LIMES_API ARTSStructureFactory : public ARadialActorBase
+class LIMES_API ARTSStructureFactory : public ABuildingBase
 {
 	GENERATED_BODY()
 	
 public:	
 	ARTSStructureFactory();
 
+	UFUNCTION(BlueprintCallable)
+		void InstantiatePreviewBuilding(const TSoftClassPtr<class ABuildingBase> &TypeToPreview);
+	
 	bool TryCommitPreviewBuilding(class ABuildingPreview *pPreviewBuilding);
 
 	FVector Discretize(const FVector &ToConvert) const;
 
 	bool IsPlacableAtPosition(ARadialActorBase *pActor) const;
-
-	UFUNCTION(BlueprintCallable)
-		void InstantiatePreviewBuilding(TSoftClassPtr<class ABuildingPreview> Type);
-	
-	PolarMath::CPolarTransform GetPolarTransform() const;
-
-	double GetCellWidthAngle(double LowRangeRadius) const;
-
-	double GetCellDepth() const;
-
-	double GetCellArcWidth() const;
 
 	void AddChildBuilding(class ARadialActorBase *pNewChild);
 
@@ -51,17 +43,25 @@ public:
 
 	bool HasIntersectionsWithChildBuildings(class ARadialActorBase *pBuildingToTest) const;
 
+	bool HasIntersectionsWithChildBuildings(const class PolarMath::CPolarCollider &HullToTest, PolarMath::CPolarCollider *out_pFirstHit = nullptr) const;
+
 	void ShowBuildingPlacementGrid();
 
 	void HideBuildingPlacementGrid();
 
+	double GetCellWidthAngle(double LowRangeRadius) const;
+
+	PolarMath::CPolarTransform GetPolarTransform() const { return PolarMath::CPolarTransform { m_pCenteredRoot->GetComponentLocation().X, m_pCenteredRoot->GetComponentLocation().Y }; }
+
+	FVector GetCenteredRootLocation() const { return m_pCenteredRoot->GetComponentLocation(); }
+
+	double GetCellDepth() const noexcept { return m_SpaceDiscretizer.GetCellDepth(); }
+
+	double GetCellWidthArc() const noexcept { return m_SpaceDiscretizer.GetCellArcWidth(); }
+
 
 protected:
-	virtual void Tick(float DeltaTime) override;
-
 	virtual void PostInitializeComponents() override;
-
-	virtual void BeginPlay() override;
 
 	void AddCollisionComponents(ARadialActorBase *pActor) const;
 
@@ -71,26 +71,15 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly)
 		UStaticMeshComponent *m_pVisualizerPlane;
 	
-	UPROPERTY(EditAnywhere, Category="Factory")
-		bool m_bIsMainFactory;
-
 	UPROPERTY(EditDefaultsOnly, Category="Factory|Grid")
 		int32 m_InnermostCellcount;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Factory|Grid")
 		int32 m_MaxRingCount;
-	   	
-	UPROPERTY(EditDefaultsOnly, Category = "Factory|Grid", Meta = (EditCondition = "m_bIsMainFactoy"))
-		float m_MinRadius;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Factory|Grid", Meta = (EditCondition = "m_bIsMainFactory"))
-		int32 m_CellDepthMultiplier;
 
 	UPROPERTY()
 		TArray<ARadialActorBase *> m_apChildBuildings;
 		
-	PolarMath::CPolarTransform m_PolarTransform;
-
 	SpaceDiscretizer m_SpaceDiscretizer;
 	   
 

@@ -9,19 +9,19 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(CustomConstructor)
 class LIMES_API ARTSSideStructureFactory : public ARTSStructureFactory
 {
 	GENERATED_BODY()
 	
 public:
+	ARTSSideStructureFactory();
 
 
-protected:
-	virtual void PostInitializeComponents() override;
-	
-	UPROPERTY(EditDefaultsOnly, Meta = (ClampMin="1"))
-		int32 m_MinRadiusMultiplier;
-	
+protected:	
+	virtual void BeginPlay() override;
+
+	virtual void OnCollisionInitialized() override;
+
 
 };

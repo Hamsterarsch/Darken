@@ -1,27 +1,19 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BuildingBase.h"
+#include "Components/StaticMeshComponent.h"
 
-
-// Sets default values
 ABuildingBase::ABuildingBase()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
-}
-
-// Called when the game starts or when spawned
-void ABuildingBase::BeginPlay()
-{
-	Super::BeginPlay();
+	m_pBuildingMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PreviewMesh"));
+	Cast<USceneComponent>(m_pBuildingMeshComp)->SetupAttachment(m_pCenteredRoot);
 	
+
 }
 
-// Called every frame
-void ABuildingBase::Tick(float DeltaTime)
+const UStaticMeshComponent *ABuildingBase::GetBuildingMeshComp() const noexcept
 {
-	Super::Tick(DeltaTime);
+	return m_pBuildingMeshComp;
+
 
 }
-

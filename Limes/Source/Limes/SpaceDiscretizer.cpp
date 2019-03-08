@@ -30,14 +30,14 @@ SpaceDiscretizer::SpaceDiscretizer(FVector Origin, float RadiusMin, int32 InnerC
 
 }
 
-SpaceDiscretizer::SpaceDiscretizer(FVector Origin, double CellArcWidth, double CellDepth, int32 MaxRingCount, int32 InnerCellCount, float MinRadiusMultiplier) :
+SpaceDiscretizer::SpaceDiscretizer(FVector Origin, double CellArcWidth, double CellDepth, int32 MaxRingCount, int32 InnerCellCount) :
 	m_Origin{ std::move(Origin) },
 	m_InnermostCellCount{ InnerCellCount },
 	m_ComputedCellDepth{ CellDepth },
 	m_ComputedCellArcWidth{ CellArcWidth },
 	m_MaxRingCount{ MaxRingCount }
 {
-	m_RadiusRangeMin = ((m_ComputedCellArcWidth * m_InnermostCellCount) / (2 * PI)) * MinRadiusMultiplier;	
+	m_RadiusRangeMin = ((m_ComputedCellArcWidth * m_InnermostCellCount) / (2 * PI));	
 	m_ComputedMaxRadiusRange = ComputeMaxRadiusRange();
 
 
@@ -45,7 +45,8 @@ SpaceDiscretizer::SpaceDiscretizer(FVector Origin, double CellArcWidth, double C
 
 FVector SpaceDiscretizer::Discretize(const FVector &ToConvert, int32 CellOffset, uint32 RingDepthOffset, bool bIsHalfOff) const
 {
-	auto AsRadialCoords = PolarMath::ToPolar({ ToConvert.X, ToConvert.Y });
+	auto OriginRelativeToConvert{ ToConvert - m_Origin };
+	auto AsRadialCoords = PolarMath::ToPolar({ OriginRelativeToConvert.X, OriginRelativeToConvert.Y });
 	AsRadialCoords.Radius = FMath::Clamp(AsRadialCoords.Radius, m_RadiusRangeMin, TNumericLimits<double>::Max());
 
 	auto RingNumber = FMath::FloorToInt((AsRadialCoords.Radius - m_RadiusRangeMin) / m_ComputedCellDepth);
@@ -75,7 +76,7 @@ FVector SpaceDiscretizer::Discretize(const FVector &ToConvert, int32 CellOffset,
 	
 
 	auto Out2DVec = AsRadialCoords.ToCartesian();
-	return { static_cast<float>(Out2DVec.X), static_cast<float>(Out2DVec.Y), ToConvert.Z };
+	return { static_cast<float>(Out2DVec.X) + m_Origin.X, static_cast<float>(Out2DVec.Y) + m_Origin.Y, ToConvert.Z };
 	
 
 

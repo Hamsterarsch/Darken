@@ -18,14 +18,17 @@ public:
 
 	virtual void PostInitializeComponents() override;
 
-	void InitializePolarCollision(class ARTSStructureFactory *pNewOwningFactory);
+	void InitMinimumCollision(class ARTSStructureFactory *pOwningFactory);
+
+	void InitExpandedCollision(class ARTSStructureFactory *pOwningFactory);
 
 	FVector GetRadialOrigin() const;
 
 	bool HasIntersectionsWith(ARadialActorBase *pRadialActor) const;
 
-	UFUNCTION(BlueprintImplementableEvent)
-		void OnCollisionInitialized();
+	bool HasIntersectionsWith(const PolarMath::CPolarCollider &HullToTest, PolarMath::CPolarCollider *out_pFirstHit = nullptr) const;
+
+	virtual void OnCollisionInitialized() {};
 
 	UFUNCTION(BlueprintCallable)
 		float GetMainHullDepth() const;
@@ -48,18 +51,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 		float GetMainHullCenterAngle() const;
 	
-	uint32 GetWidthInCells() const { return m_ActorWidthInCells; }
+	uint32 GetWidthInCells() const noexcept { return m_ActorWidthInCells; }
 
-	uint32 GetDepthInCells() const { return m_ActorDepthInCells; }
+	uint32 GetDepthInCells() const noexcept { return m_ActorDepthInCells; }
 
 
 protected:
 	void SetupHullVisualization();
 
-
-	UPROPERTY()
-		class ARTSStructureFactory *m_pOwningFactory;
-	
+	UPROPERTY(VisibleDefaultsOnly)
+		UStaticMeshComponent *m_pHullVisualizerPlane;
+		
 	UPROPERTY(EditDefaultsOnly)
 		uint32 m_ActorWidthInCells;
 
@@ -67,11 +69,25 @@ protected:
 		uint32 m_ActorDepthInCells;
 
 	UPROPERTY()
-		UStaticMeshComponent *m_pHullVisualizerPlane;
+		class USceneComponent *m_pCenteredRoot;
+
+	UPROPERTY()
+		class ARTSStructureFactory *m_pOwningFactory;
+
+	UPROPERTY()
+		TArray<class UStaticMeshComponent *> m_apHullVisPlanes;
 
 	PolarMath::CPolarCollision m_PolarCollision;
 
 	bool m_bIsCollisionInitialized;
+
+
+private:
+	UPROPERTY(EditDefaultsOnly)
+		class UMaterialInterface *m_pHullVisMaterial;
+
+	UPROPERTY(EditDefaultsOnly)
+		class UStaticMesh *m_pHullVisMesh;
 
 	
 };
