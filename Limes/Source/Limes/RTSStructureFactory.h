@@ -59,6 +59,8 @@ public:
 
 	double GetCellWidthArc() const noexcept { return m_SpaceDiscretizer.GetCellArcWidth(); }
 
+	double GetInnermostRingRadius() const noexcept { return m_SpaceDiscretizer.GetInnermostRadius(); }
+
 
 protected:
 	virtual void PostInitializeComponents() override;

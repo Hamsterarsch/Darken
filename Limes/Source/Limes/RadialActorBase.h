@@ -55,6 +55,8 @@ public:
 
 	uint32 GetDepthInCells() const noexcept { return m_ActorDepthInCells; }
 
+	class USceneComponent *GetCenteredRoot() const noexcept { return m_pCenteredRoot; }
+
 
 protected:
 	void SetupHullVisualization();
