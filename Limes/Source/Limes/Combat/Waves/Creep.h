@@ -29,20 +29,17 @@ public:
 
 
 protected:
-	virtual void BeginPlay() override;
 
-	virtual void PostInitializeComponents() override;
-
-	UFUNCTION()
-		void OnTakeDamage(AActor *pDamagedActor, float Damage, const class UDamageType *pDamageType, class AController *pInstigatedBy, AActor *pDamageCauser);
-
-	UFUNCTION(BlueprintImplementableEvent)
-		void OnHealthLostEvent(float RemainingPercent, float RemainingHealth);
-
-
-protected:
-	UPROPERTY()
-		class ACreepController *m_pController;
+	virtual void OnTakeDamage
+	(
+		AActor *pDamagedActor, 
+		float Damage, 
+		const UDamageType *pDamageType, 
+		AController *pInstigatedBy, 
+		AActor *pDamageCauser
+	)
+	override;
+	
 
 	UPROPERTY(EditDefaultsOnly)
 		float m_DamagePerHit;
@@ -53,7 +50,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 		float m_DamageToBeacons;
 
-
+	UPROPERTY()
+		class ACreepController *m_pController;
 	
 
 };

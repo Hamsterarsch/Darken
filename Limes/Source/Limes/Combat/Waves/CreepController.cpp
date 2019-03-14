@@ -3,8 +3,8 @@
 #include "CreepController.h"
 #include "Creep.h"
 #include "Engine/World.h"
-#include "RTSMainStructureFactory.h"
-#include "RTSGameInstance.h"
+#include "Building/Beacon/RTSMainStructureFactory.h"
+#include "Misc/RTSGameInstance.h"
 
 
 ACreepController::ACreepController() :

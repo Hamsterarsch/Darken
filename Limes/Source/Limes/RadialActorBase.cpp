@@ -2,12 +2,12 @@
 
 #include "RadialActorBase.h"
 #include "PolarCollider.h"
-#include "Limes.h"
-#include "RTSStructureFactory.h"
+#include "Misc/Limes.h"
+#include "Building/Beacon/RTSStructureFactory.h"
 #include "Engine/Classes/Materials/MaterialInstanceDynamic.h"
 #include "Components/StaticMeshComponent.h"
 #include "DrawDebugHelpers.h"
-#include "RTSGameInstance.h"
+#include "Misc/RTSGameInstance.h"
 
 //Public------------
 

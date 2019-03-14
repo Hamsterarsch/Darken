@@ -14,26 +14,35 @@ class LIMES_API AWaveMob : public APawn
 public:
 	AWaveMob();
 
-	virtual float GetCurrentHealth() const noexcept { return m_CurrentHealthpoints; }
-
 	float GetAttackRange() const noexcept { return  m_AttackRange; }
 
-	UFUNCTION(BlueprintCallable)
-		float GetRemainingHealthPercent() const noexcept { return m_CurrentHealthpoints / m_MaxHealthpoints; }
-
+	float GetCurrentHealth() const;
 
 protected:
 	virtual void PostInitializeComponents() override;
 
+	UFUNCTION()
+		virtual void OnTakeDamage
+		(
+			AActor *pDamagedActor,
+			float Damage, 
+			const class UDamageType *pDamageType, 
+			class AController *pInstigatedBy, 
+			AActor *pDamageCauser
+		);
 
-	UPROPERTY(EditDefaultsOnly, Meta = (ClampMin = "1"))
-		float m_MaxHealthpoints;
+	UFUNCTION()
+		void ReceiveOnDeath();
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnDeath();
+
 
 	UPROPERTY(EditDefaultsOnly)
 		float m_AttackRange;
 
-	float m_CurrentHealthpoints;
-	
+	UPROPERTY(VisibleDefaultsOnly)
+		class UHealthComponent *m_pHealthComp;
 
 	
 };

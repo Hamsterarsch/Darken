@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "BuildingBase.h"
+#include "Building/BuildingBase.h"
 #include "TurretBase.generated.h"
 
 /**
@@ -20,6 +20,10 @@ public:
 
 protected:
 	virtual void PostInitializeComponents() override;
+
+	virtual void OnEnemyEntersRange(class AWaveMob *pMob) {};
+
+	virtual void OnEnemyLeavesRange(class AWaveMob *pMob) {};
 
 	UFUNCTION()
 		void OnAttackRangeBeginOverlap
@@ -41,10 +45,22 @@ protected:
 			int32 OtherBodyIndex
 		);
 
-	virtual void OnEnemyEntersRange(class AWaveMob *pMob) {};
+	UFUNCTION()
+		virtual void OnTakeDamage
+		(
+			AActor *pDamagedActor,
+			float Damage,
+			const class UDamageType *pDamageType,
+			class AController *pInstigatedBy,
+			AActor *pDamageCauser
+		);
 
-	virtual void OnEnemyLeavesRange(class AWaveMob *pMob) {};
+	UFUNCTION()
+		void ReceiveOnDeath();
 
+	UFUNCTION(BlueprintImplementableEvent)
+		void OnDeath();
+	
 	float GetRemainingHealthPercent() const noexcept { return m_CurrentHealthpoints / m_MaxHealthpoints; }
 
 
@@ -56,6 +72,9 @@ protected:
 	   
 	UPROPERTY(VisibleDefaultsOnly)
 		class USphereComponent *m_pAttackRangeTrigger;
+
+	UPROPERTY(VisibleDefaultsOnly)
+		class UHealthComponent *m_pHealthComp;
 
 	float m_CurrentHealthpoints;
 

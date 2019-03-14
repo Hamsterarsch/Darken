@@ -17,11 +17,14 @@ public:
 
 	UPROPERTY(EditAnywhere)
 		class UMaterialInterface *pMaterialBuildingNonPlaceable;
+	
+	UPROPERTY(EditAnywhere)
+		TSoftClassPtr<class UBarWidgetBase> HealthBarWidgetClass;
 
 	UPROPERTY()
 		class UStaticMesh *pPlaneMesh;
 
-
+	
 };
 
 /**
@@ -46,6 +49,8 @@ public:
 	void SetMainStructureFactory(class ARTSMainStructureFactory *pMainStructureFactory);
 
 	virtual void Init() override;
+
+	static URTSGameInstance *s_pInstance;
 
 
 protected:

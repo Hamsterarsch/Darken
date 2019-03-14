@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "SpaceDiscretizer.h"
-#include "BuildingBase.h"
+#include "Building/BuildingBase.h"
 #include "PolarTransform.h"
 #include "RTSStructureFactory.generated.h"
 

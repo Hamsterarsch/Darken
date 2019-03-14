@@ -2,8 +2,10 @@
 
 #include "RTSGameInstance.h"
 #include "Limes.h"
-#include "RTSMainStructureFactory.h"
+#include "Building/Beacon/RTSMainStructureFactory.h"
 #include "Paths.h"
+
+URTSGameInstance *URTSGameInstance::s_pInstance{ nullptr };
 
 const FRTSGlobalData& URTSGameInstance::GetGlobalData() const noexcept
 {
@@ -48,6 +50,8 @@ void URTSGameInstance::Init()
 {
 	Super::Init();
 
+	s_pInstance = this;
+
 	m_GlobalData.pPlaneMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Engine/BasicShapes/Plane.Plane"));
 	if (!m_GlobalData.pPlaneMesh)
 	{
@@ -56,4 +60,3 @@ void URTSGameInstance::Init()
 	
 
 }
-

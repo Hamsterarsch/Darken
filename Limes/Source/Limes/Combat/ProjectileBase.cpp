@@ -2,7 +2,7 @@
 
 #include "ProjectileBase.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Limes.h"
+#include "Misc/Limes.h"
 #include "Components/ShapeComponent.h"
 
 AProjectileBase::AProjectileBase()

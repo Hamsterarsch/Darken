@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "ProjectileTurret.h"
-#include "ProjectileBase.h"
-#include "WaveMob.h"
-#include "Limes.h"
+#include "Combat/ProjectileBase.h"
+#include "Combat/Waves/WaveMob.h"
+#include "Misc/Limes.h"
 #include "Engine/World.h"
 
 

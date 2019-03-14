@@ -9,10 +9,10 @@
 #include "Engine/GameInstance.h"
 #include "Engine/GameViewportClient.h"
 #include "RTSPlayerController.h"
-#include "Limes.h"
-#include "BuildingPreview.h"
-#include "RTSGameInstance.h"
-#include "RTSMainStructureFactory.h"
+#include "Misc/Limes.h"
+#include "Building/BuildingPreview.h"
+#include "Misc/RTSGameInstance.h"
+#include "Building/Beacon/RTSMainStructureFactory.h"
 
 
 

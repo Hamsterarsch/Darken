@@ -2,7 +2,8 @@
 
 #include "TurretBase.h"
 #include "Components/SphereComponent.h"
-#include "WaveMob.h"
+#include "Combat/Waves/WaveMob.h"
+#include "Combat/HealthComponent.h"
 
 
 ATurretBase::ATurretBase() :
@@ -15,6 +16,10 @@ ATurretBase::ATurretBase() :
 	m_pAttackRangeTrigger->OnComponentEndOverlap.AddDynamic(this, &ATurretBase::OnAttackRangeEndOverlap);
 	m_pAttackRangeTrigger->SetCollisionProfileName(TEXT("Trigger"));
 
+	m_pHealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealtComp"));
+
+	m_pHealthComp->m_eOnHealthZero.AddDynamic(this, &ATurretBase::ReceiveOnDeath);
+
 
 }
 
@@ -24,6 +29,8 @@ void ATurretBase::PostInitializeComponents()
 
 	m_pAttackRangeTrigger->SetSphereRadius(m_AttackRange);
 	m_CurrentHealthpoints = m_MaxHealthpoints;
+
+	OnTakeAnyDamage.AddDynamic(this, &ATurretBase::OnTakeDamage);
 
 
 }
@@ -59,5 +66,29 @@ void ATurretBase::OnAttackRangeEndOverlap
 		OnEnemyLeavesRange(pAsMob);
 	}
 
+
+}
+
+void ATurretBase::OnTakeDamage
+(
+	AActor *pDamagedActor, 
+	const float Damage, 
+	const UDamageType *pDamageType,
+	AController *pInstigatedBy,
+	AActor *pDamageCauser
+)
+{
+	if(Damage > 0)
+	{
+		m_pHealthComp->TakeDamage(Damage);		
+	}
+
+
+}
+
+void ATurretBase::ReceiveOnDeath()
+{
+	OnDeath();
+	Destroy();
 
 }

@@ -19,7 +19,7 @@ public:
 
 
 protected:
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly)
 		class UStaticMeshComponent *m_pBuildingMeshComp;
 	
 	

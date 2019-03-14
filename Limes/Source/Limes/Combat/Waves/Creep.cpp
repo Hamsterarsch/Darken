@@ -5,8 +5,8 @@
 
 
 ACreep::ACreep() :
-	m_pController{ nullptr },
 	m_DamagePerHit{ 10 },
+	m_pController{ nullptr },
 	m_HitsPerSecond{ 1 },
 	m_DamageToBeacons{ 10 }
 { 	
@@ -23,10 +23,10 @@ void ACreep::Tick(float DeltaTime)
 }
 
 void ACreep::PossessedBy(AController* NewController)
-{	
+{
 	Super::PossessedBy(NewController);
-	
-	if(NewController)
+
+	if (NewController)
 	{
 		m_pController = NewController->IsA<ACreepController>() ? Cast<ACreepController>(NewController) : nullptr;
 	}
@@ -44,47 +44,29 @@ void ACreep::UnPossessed()
 
 	m_pController = nullptr;
 
-
-
-}
-
-void ACreep::BeginPlay()
-{
-	Super::BeginPlay();
-
 	
 }
 
-void ACreep::PostInitializeComponents()
+void ACreep::OnTakeDamage
+(
+	AActor *pDamagedActor, 
+	const float Damage, 
+	const UDamageType *pDamageType,
+	AController *pInstigatedBy, 
+	AActor *pDamageCauser
+)
 {
-	Super::PostInitializeComponents();
+	Super::OnTakeDamage(pDamagedActor, Damage, pDamageType, pInstigatedBy, pDamageCauser);
 
-	OnTakeAnyDamage.AddDynamic(this, &ACreep::OnTakeDamage);
-
-
-}
-
-void ACreep::OnTakeDamage(AActor* pDamagedActor, float Damage, const UDamageType* pDamageType, AController* pInstigatedBy, AActor* pDamageCauser)
-{
-	if (!m_pController)
+	if(!m_pController)
 	{
 		return;
 	}
 
-	if (pDamageCauser->bCanBeDamaged)
+	if(auto *pCtrl{ Cast<ACreepController>(m_pController) })
 	{
-		m_pController->SetNewAttackTarget(pDamageCauser);
-	}
-
-	m_CurrentHealthpoints -= std::abs(Damage);
-	OnHealthLostEvent(GetRemainingHealthPercent(), m_CurrentHealthpoints);
-
-	if (m_CurrentHealthpoints <= 0)
-	{
-		Destroy();
+		pCtrl->SetNewAttackTarget(pDamageCauser);
 	}
 
 
 }
-
-

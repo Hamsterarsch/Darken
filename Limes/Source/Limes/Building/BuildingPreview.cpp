@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "BuildingPreview.h"
-#include "Limes.h"
+#include "Misc/Limes.h"
 #include "BuildingBase.h"
 #include "Materials/MaterialInterface.h"
 #include "Components/StaticMeshComponent.h"
 #include "DrawDebugHelpers.h"
 #include "Engine/World.h"
-#include "RTSStructureFactory.h"
-#include "RTSGameInstance.h"
+#include "Building/Beacon/RTSStructureFactory.h"
+#include "Misc/RTSGameInstance.h"
 #include "Kismet/GameplayStatics.h"
 
 

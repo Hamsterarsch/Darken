@@ -3,18 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AIController.h"
-#include "PlayerAIController.generated.h"
+#include "GameFramework/GameModeBase.h"
+#include "LimesGameModeBase.generated.h"
+
 
 /**
  * 
  */
 UCLASS()
-class LIMES_API APlayerAIController : public AAIController
+class LIMES_API ALimesGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 	
-	
-	
-	
+public:
+
+
 };

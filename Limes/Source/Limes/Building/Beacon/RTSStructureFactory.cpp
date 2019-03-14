@@ -1,14 +1,14 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "RTSStructureFactory.h"
-#include "Limes.h"
-#include "BuildingPreview.h"
+#include "Misc/Limes.h"
+#include "Building/BuildingPreview.h"
 #include "Engine/World.h"
-#include "RTSGameInstance.h"
+#include "Misc/RTSGameInstance.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/BoxComponent.h"
-#include "BuildingBase.h"
-#include "RTSPlayerEye.h"
+#include "Building/BuildingBase.h"
+#include "Player/RTSPlayerEye.h"
 
 constexpr auto ECCPlacable = ECC_GameTraceChannel1;
 constexpr auto ECCNonPlacable = ECC_GameTraceChannel2;
