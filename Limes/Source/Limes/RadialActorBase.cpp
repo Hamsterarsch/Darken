@@ -17,10 +17,6 @@ ARadialActorBase::ARadialActorBase() :
 	m_ActorWidthInCells{ 3 }
 {	
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("PolarRoot")));
-	m_pHullVisualizerPlane = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("PolarVisualizerPlane"));
-	m_pHullVisualizerPlane->SetupAttachment(GetRootComponent());
-	m_pHullVisualizerPlane->SetRelativeLocation({ 0, 0, 10 });
-	m_pHullVisualizerPlane->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	m_pCenteredRoot = CreateDefaultSubobject<USceneComponent>(TEXT("CenteredRoot"));
 	m_pCenteredRoot->SetupAttachment(GetRootComponent());
@@ -249,13 +245,15 @@ void ARadialActorBase::SetupHullVisualization()
 
 	
 	UStaticMesh *pVisMesh{ nullptr };
+	UMaterialInterface *pMaterial{ nullptr };
 	if (auto *pGI{ Cast<URTSGameInstance>(GetGameInstance()) })
 	{
 		pVisMesh = pGI->GetGlobalData().pPlaneMesh;
+		pMaterial = pGI->GetGlobalData().pMaterialHullVisDefault;
 
-		if(!pVisMesh)
+		if(!pVisMesh || !pMaterial)
 		{
-			UE_LOG(RTS_StructurePlacement, Error, TEXT("Could not get plane mesh for hull visualization"));
+			UE_LOG(RTS_StructurePlacement, Error, TEXT("Could not get plane mesh or material for hull visualization"));
 			return;			
 		}
 	}
@@ -269,20 +267,16 @@ void ARadialActorBase::SetupHullVisualization()
 			return;
 		}
 
-		if(!m_pHullVisMaterial)
-		{
-			return;
-		}
-
 		Comp->SetupAttachment(GetRootComponent());
 		Comp->RegisterComponent();
 		Comp->SetStaticMesh(pVisMesh);
 		Comp->SetWorldScale3D({ static_cast<float>(ScaleBase) * 3, static_cast<float>(ScaleBase * 3), 1 });
 		Comp->SetRelativeLocation({ 0,0,10 });
+		Comp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 		m_apHullVisPlanes.Add(Comp);
 
 
-		auto *pDynMat{ Comp->CreateDynamicMaterialInstance(0, m_pHullVisMaterial) };
+		auto *pDynMat{ Comp->CreateDynamicMaterialInstance(0, pMaterial) };
 
 		pDynMat->SetVectorParameterValue( TEXT("CartesianCenter"), CenterAsColor );
 		pDynMat->SetScalarParameterValue( TEXT("MinRadius"), static_cast<float>(Hull.GetRadiusMin()) );

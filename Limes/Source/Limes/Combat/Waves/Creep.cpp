@@ -57,7 +57,7 @@ void ACreep::OnTakeDamage
 )
 {
 	Super::OnTakeDamage(pDamagedActor, Damage, pDamageType, pInstigatedBy, pDamageCauser);
-
+	   
 	if(!m_pController)
 	{
 		return;

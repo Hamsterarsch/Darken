@@ -68,71 +68,103 @@ public:
 	ARTSPlayerEye();
 	
 	void NotifyNewBuildingPreview(class ABuildingPreview *pNewPreview, class ARTSStructureFactory *pFactory);
+
 	void AddForwardMovement(float AxisValue);
+
 	void AddRightMovement(float AxisValue);
+
 	void AddForwardMovementFromMouse(float AxisValue);
+
 	void AddRightMovementFromMouse(float AxisValue);
+
 	void AddCameraYaw(float AxisValue);
+
 	void AddCameraYawFromMouse(float AxisValue);
+
 	void AddCameraPitchFromMouse(float AxisValue);
+
 	void ZoomOut();
+
 	void ZoomIn();
 
+
 	void SetPreviewCursorPosWs(const FVector &NewPos);
+
 	void UpdatePreviewCursorPos();
+
 	void UpdateBuildingPreviewProperties();
+
 	bool TryCommitBuildingPreview();
+
 	void DiscardBuildingPreview();
 
+	void ShowMenuItemOnClick();
+
+
 	const static FName s_AxisMouseX;
+
 	const static FName s_AxisMouseY;
-	constexpr static ECollisionChannel s_CollisionLayerPlacable{ ECC_GameTraceChannel1 };
-	constexpr static ECollisionChannel s_CollisionLayerNonPlacable{ ECC_GameTraceChannel2 };
+
+	constexpr static ECollisionChannel s_CollisionLayerPlaceable{ ECC_GameTraceChannel1 };
+
+	constexpr static ECollisionChannel s_CollisionLayerNonPlaceable{ ECC_GameTraceChannel2 };
 
 
 protected:
 	virtual void PostInitializeComponents() override;
+
 	virtual void Tick(float DeltaTime) override;
+
 	virtual void BeginPlay() override;
+
 
 	virtual void SetupPlayerInputComponent(UInputComponent *InputComponent) override;
 
 	void ActionSelectStart();
+
 	void ActionSelectEnd();
+
 	void ActionContextStart();
+
 	void ActionContextEnd();
+
 	void EnterSeamlessRotation();
+
 	void LeaveSeamlessRotation();
-	   
+
+	
 	UPROPERTY(VisibleAnywhere)
 		class USpringArmComponent *m_pCameraSpringArm;
 
 	UPROPERTY(VisibleAnywhere)
 		class UCameraComponent *m_pCamera;
 	
-	UPROPERTY(EditDefaultsOnly, DisplayName="Mouse Shuffle Speed")
+	UPROPERTY(EditDefaultsOnly, DisplayName="Mouse Shuffle Speed", Category="Controls")
 		float m_MouseShuffleSpeed;
 
-	UPROPERTY(EditDefaultsOnly, DisplayName = "Key Shuffle Speed")
+	UPROPERTY(EditDefaultsOnly, DisplayName = "Key Shuffle Speed", Category="Controls")
 		float m_KeyShuffleSpeed;
 
-	UPROPERTY(EditDefaultsOnly, DisplayName = "Mouse Turn Speed")
+	UPROPERTY(EditDefaultsOnly, DisplayName = "Mouse Turn Speed", Category="Controls")
 		float m_MouseTurnSpeed;
 
-	UPROPERTY(EditDefaultsOnly, DisplayName = "Key Turn Speed")
+	UPROPERTY(EditDefaultsOnly, DisplayName = "Key Turn Speed", Category="Controls")
 		float m_KeyTurnSpeed;
 
-	UPROPERTY(EditDefaultsOnly, DisplayName = "Max Camera Pitch")
+	UPROPERTY(EditDefaultsOnly, DisplayName = "Max Camera Pitch", Category="Controls")
 		float m_CameraMaxPitch;
 
-	UPROPERTY(EditDefaultsOnly, DisplayName = "Min Camera Pitch")
+	UPROPERTY(EditDefaultsOnly, DisplayName = "Min Camera Pitch", Category="Controls")
 		float m_CameraMinPitch;
 	
-	UPROPERTY()
-		class UGameViewportClient *m_pViewportClient;
+	UPROPERTY(EditDefaultsOnly, Category="Controls")
+		TArray<FZoomNode> m_aZoomNodes;
 
 	UPROPERTY(EditDefaultsOnly)
-		TArray<FZoomNode> m_aZoomNodes;
+		TSubclassOf<class UBuildingWidgetBase> m_BuildingWidgetClass;
+
+	UPROPERTY()
+		class UGameViewportClient *m_pViewportClient;
 
 	UPROPERTY()
 		USceneComponent *m_pCursorRoot;
@@ -142,6 +174,9 @@ protected:
 
 	UPROPERTY()
 		class ARTSStructureFactory *m_pCurrentTargetFactory;
+
+	UPROPERTY()
+		class UBuildingWidgetBase *m_pBuildingWidget;
 
 	bool m_bBuildingPreviewWasPlacable;
 	FVector2D m_MouseShufflePreMousePos;

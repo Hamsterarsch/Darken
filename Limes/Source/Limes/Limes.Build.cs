@@ -9,17 +9,26 @@ public class Limes : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "UMG"});
+
+        if (Target.bBuildEditor)
+        {
+            PublicDependencyModuleNames.Add("PropertyEditor");
+        }
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule" });
-                
+        PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+
+        //Polar math lib
         PublicAdditionalLibraries.Add( Path.GetFullPath(Path.Combine(ModuleDirectory, "../../Binaries/Win64/PolarMath.lib")) );
         PublicIncludePaths.Add( Path.Combine(ModuleDirectory, "../../PolarMath/hdr/") );
 
-        System.Console.WriteLine(Path.Combine(ModuleDirectory, "../../PolarMath/hdr/"));
-        
-		// Uncomment if you are using Slate UI
-		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
+        System.Console.WriteLine
+        (
+            "Adding static library under path:\n\t\t" 
+            + Path.Combine(ModuleDirectory, "../../PolarMath/hdr/") 
+            + "\n\t\tto Limes dependencies"
+        );
 		
 		// Uncomment if you are using online features
 		// PrivateDependencyModuleNames.Add("OnlineSubsystem");

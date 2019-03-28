@@ -83,21 +83,21 @@ FVector SpaceDiscretizer::Discretize(const FVector &ToConvert, int32 CellOffset,
 
 }
 
-double SpaceDiscretizer::GetCellWidthAngle(double LowRangeRadius) const noexcept
+double SpaceDiscretizer::GetCellWidthAngle(double LowRangeRadius) const 
 {	
 	return  360 / ((2 * PI * LowRangeRadius) / m_ComputedCellArcWidth);
 
 
 }
 
-double SpaceDiscretizer::GetOutmostRadius() const noexcept
+double SpaceDiscretizer::GetOutmostRadius() const 
 {
 	return m_ComputedMaxRadiusRange;
 
 
 }
 
-int32 SpaceDiscretizer::GetMaxRingCount() const noexcept
+int32 SpaceDiscretizer::GetMaxRingCount() const 
 {
 	return m_MaxRingCount;
 
@@ -107,7 +107,7 @@ int32 SpaceDiscretizer::GetMaxRingCount() const noexcept
 
 //Protected--------------------
 
-double SpaceDiscretizer::ComputeMaxRadiusRange() const noexcept
+double SpaceDiscretizer::ComputeMaxRadiusRange() const 
 {
 	if (m_MaxRingCount < 0)
 	{

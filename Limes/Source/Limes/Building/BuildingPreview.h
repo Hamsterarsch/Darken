@@ -25,6 +25,8 @@ public:
 
 	void NotifyPlacable();
 
+	void ResetPolarCollision();
+
 
 protected:
 	virtual void PostInitializeComponents() override;

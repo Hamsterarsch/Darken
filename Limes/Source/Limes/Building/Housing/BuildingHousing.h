@@ -3,19 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/GameModeBase.h"
-#include "LimesGameModeBase.generated.h"
-
+#include "Building/BuildingPeopled.h"
+#include "BuildingHousing.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class LIMES_API ALimesGameModeBase : public AGameModeBase
+class LIMES_API ABuildingHousing : public ABuildingPeopled
 {
 	GENERATED_BODY()
 	
-public:
-
-
+	
+	
+	
 };

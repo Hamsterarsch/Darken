@@ -1,3 +1,5 @@
+#pragma once
+
 namespace PolarMath
 {
 	constexpr double PolarMath_PI = 3.14159265358979323846;

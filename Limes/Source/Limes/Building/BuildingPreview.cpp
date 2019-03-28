@@ -86,6 +86,25 @@ void ABuildingPreview::NotifyPlacable()
 
 }
 
+void ABuildingPreview::ResetPolarCollision()
+{
+	m_bIsCollisionInitialized = false;
+
+	for (auto &&pComp : m_apHullVisPlanes)
+	{
+		if (!pComp)
+		{
+			continue;
+		}
+
+		pComp->DestroyComponent();
+
+	}
+	m_apHullVisPlanes.Empty();
+
+
+}
+
 
 //Protected-------------
 

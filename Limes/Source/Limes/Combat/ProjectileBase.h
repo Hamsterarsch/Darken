@@ -14,12 +14,16 @@ class LIMES_API AProjectileBase : public AActor
 public:	
 	AProjectileBase();
 
-	void LaunchAt(AActor *pSource, AActor *pTarget, float Speed,  float Damage = -1, bool bIsHoming = false);
+	virtual void Tick(float DeltaTime) override;
 
-	void LaunchAt(AActor *pSource, FVector &Target, float Speed, float Damage = -1);
+	void LaunchAt(AActor *pSource, AActor *pTarget, float Speed,  float Damage = -1, float MaxFlyDistance = TNumericLimits<float>::Max(), bool bIsHoming = false);
+
+	void LaunchAt(AActor *pSource, FVector &Target, float Speed, float Damage = -1, float MaxFlyDistance = TNumericLimits<float>::Max());
 
 
 protected:
+	virtual void BeginPlay() override;
+
 	UFUNCTION()
 		void OnProjectileStopped(const FHitResult &Hit);
 
@@ -31,9 +35,13 @@ protected:
 		class UProjectileMovementComponent *m_pMovementComp;
 
 	UPROPERTY()
-		AActor *m_pSource;
+		class AActor *m_pSource;
 
-		float m_Damage;
+	float m_Damage;
+
+	float m_MaxFlyDistance;
+
+	FVector m_SpawnPoint;
 
 
 };

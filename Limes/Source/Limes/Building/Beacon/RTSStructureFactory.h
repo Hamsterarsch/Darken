@@ -55,11 +55,11 @@ public:
 
 	FVector GetCenteredRootLocation() const { return m_pCenteredRoot->GetComponentLocation(); }
 
-	double GetCellDepth() const noexcept { return m_SpaceDiscretizer.GetCellDepth(); }
+	double GetCellDepth() const  { return m_SpaceDiscretizer.GetCellDepth(); }
 
-	double GetCellWidthArc() const noexcept { return m_SpaceDiscretizer.GetCellArcWidth(); }
+	double GetCellWidthArc() const  { return m_SpaceDiscretizer.GetCellArcWidth(); }
 
-	double GetInnermostRingRadius() const noexcept { return m_SpaceDiscretizer.GetInnermostRadius(); }
+	double GetInnermostRingRadius() const  { return m_SpaceDiscretizer.GetInnermostRadius(); }
 
 
 protected:

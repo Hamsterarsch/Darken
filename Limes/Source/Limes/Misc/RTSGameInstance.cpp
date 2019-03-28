@@ -7,7 +7,7 @@
 
 URTSGameInstance *URTSGameInstance::s_pInstance{ nullptr };
 
-const FRTSGlobalData& URTSGameInstance::GetGlobalData() const noexcept
+const FRTSGlobalData& URTSGameInstance::GetGlobalData() const 
 {
 	return m_GlobalData;
 
@@ -58,5 +58,15 @@ void URTSGameInstance::Init()
 		UE_LOG(RTS_GameInstance, Error, TEXT("Could not load plane mesh from path"));
 	}
 	
+
+}
+
+void URTSGameInstance::Shutdown()
+{
+	Super::Shutdown();
+
+	//reset this so editor windows dont use a 
+	//corrupted state after a pie doesn't 
+	s_pInstance = nullptr;
 
 }

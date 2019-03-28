@@ -43,7 +43,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly)
 		bool m_bFiresHomingShots;
 
-	UPROPERTY(EditDefaultsOnly)
+	UPROPERTY(VisibleDefaultsOnly)
 		class USceneComponent *m_pProjectileSpawn;
 
 	UPROPERTY(EditDefaultsOnly)

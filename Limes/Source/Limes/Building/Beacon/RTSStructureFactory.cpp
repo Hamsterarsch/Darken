@@ -70,6 +70,7 @@ bool ARTSStructureFactory::TryCommitPreviewBuilding(ABuildingPreview *pPreviewBu
 		if (HasIntersectionsWithChildBuildings(pPreviewBuilding))
 		{
 			pActor->Destroy();
+			pPreviewBuilding->ResetPolarCollision();
 			return false;
 		}
 		else
@@ -260,6 +261,7 @@ void ARTSStructureFactory::SetupGridVisualization()
 	}
 	m_pVisualizerPlane->SetWorldScale3D({ PlaneScale, PlaneScale, 1 });
 	m_pVisualizerPlane->SetRelativeLocation({ 0, 0, 5 });
+	m_pVisualizerPlane->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 
 }

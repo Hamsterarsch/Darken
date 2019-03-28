@@ -15,7 +15,7 @@ class LIMES_API ABuildingBase : public ARadialActorBase
 public:
 	ABuildingBase();
 
-	const UStaticMeshComponent *GetBuildingMeshComp() const noexcept;
+	const UStaticMeshComponent *GetBuildingMeshComp() const ;
 
 
 protected:

@@ -4,6 +4,7 @@
 #include "Combat/ProjectileBase.h"
 #include "Combat/Waves/WaveMob.h"
 #include "Misc/Limes.h"
+#include "Components/SphereComponent.h"
 #include "Engine/World.h"
 
 
@@ -51,8 +52,8 @@ void AProjectileTurret::AttackMob(AWaveMob* pMob)
 		auto pProjectile{ Cast<AProjectileBase>(GetWorld()->SpawnActor(m_pLoadedProjectileClass, &SpawnLocation)) };
 
 		if(pProjectile)
-		{
-			pProjectile->LaunchAt(this, pMob, m_ProjectileSpeed, m_ProjectileDamage, m_bFiresHomingShots);
+		{			
+			pProjectile->LaunchAt(this, pMob, m_ProjectileSpeed, m_ProjectileDamage, m_pAttackRangeTrigger->GetScaledSphereRadius(), m_bFiresHomingShots);
 		}
 
 

@@ -162,49 +162,49 @@ bool CPolarCollision::HasSingleSourceHull() const
 
 }
 
-double PolarMath::CPolarCollision::GetMainHullDepth() const noexcept
+double PolarMath::CPolarCollision::GetMainHullDepth() const 
 {
 	return m_lSourceHulls.front().GetDepth();
 
 
 }
 
-double PolarMath::CPolarCollision::GetMainHullRightAngle() const noexcept
+double PolarMath::CPolarCollision::GetMainHullRightAngle() const 
 {
 	return m_lSourceHulls.front().GetRightMin().Angle;
 
 
 }
 
-double PolarMath::CPolarCollision::GetMainHullLeftAngle() const noexcept
+double PolarMath::CPolarCollision::GetMainHullLeftAngle() const 
 {
 	return m_lSourceHulls.front().GetLeftMin().Angle;
 
 
 }
 
-double PolarMath::CPolarCollision::GetMainHullMinRadius() const noexcept
+double PolarMath::CPolarCollision::GetMainHullMinRadius() const 
 {
 	return m_lSourceHulls.front().GetLeftMin().Radius;
 
 
 }
 
-double PolarMath::CPolarCollision::GetMainHullCenterAngle() const noexcept
+double PolarMath::CPolarCollision::GetMainHullCenterAngle() const 
 {
 	return m_lSourceHulls.front().GetCenterAngle();
 
 
 }
 
-double PolarMath::CPolarCollision::GetMainHullHalfWidthAngle() const noexcept
+double PolarMath::CPolarCollision::GetMainHullHalfWidthAngle() const 
 {
 	return m_lSourceHulls.front().GetHalfAngle();
 
 
 }
 
-SVector2D PolarMath::CPolarCollision::GetCartesianCenter() const noexcept
+SVector2D PolarMath::CPolarCollision::GetCartesianCenter() const 
 {
 	return m_SourceTf.GetCartesianPos();
 

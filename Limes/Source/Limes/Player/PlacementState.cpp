@@ -51,6 +51,8 @@ std::unique_ptr<IPlacementState> CPlacementState_Idle::HandleInput(CPlacementSta
 	case EAbstractInputEvent::PlaceBuilding_Start:
 		return std::make_unique<CPlacementState_PlacementBuilding>();
 		break;
+	case EAbstractInputEvent::ActionSelect_Start:
+		pParent->GetEye()->ShowMenuItemOnClick();
 	}
 	return nullptr;
 

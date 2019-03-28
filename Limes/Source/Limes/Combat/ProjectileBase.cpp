@@ -8,6 +8,7 @@
 AProjectileBase::AProjectileBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.TickInterval = .25;
 
 	m_pMovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("MovementComp"));
 	m_pMovementComp->SetAutoActivate(false);
@@ -21,7 +22,19 @@ AProjectileBase::AProjectileBase()
 
 }
 
-void AProjectileBase::LaunchAt(AActor *pSource, AActor* pTarget, float Speed, float Damage, bool bIsHoming)
+void AProjectileBase::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	if((m_SpawnPoint - GetActorLocation()).Size() >= m_MaxFlyDistance)
+	{
+		Destroy();
+	}
+
+
+}
+
+void AProjectileBase::LaunchAt(AActor *pSource, AActor* pTarget, float Speed, float Damage, float MaxFlyDistance, bool bIsHoming)
 {	
 	if(!pTarget)
 	{
@@ -35,20 +48,30 @@ void AProjectileBase::LaunchAt(AActor *pSource, AActor* pTarget, float Speed, fl
 	}
 
 	auto TargetPos{ pTarget->GetActorLocation() };
-	LaunchAt(pSource, TargetPos, Speed, Damage);
+	LaunchAt(pSource, TargetPos, Speed, Damage, MaxFlyDistance);
 
 
 }
 
-void AProjectileBase::LaunchAt(AActor *pSource, FVector& Target, float Speed, float Damage)
+void AProjectileBase::LaunchAt(AActor *pSource, FVector& Target, float Speed, float Damage, float MaxFlyDistance)
 {
 	auto DispToTarget{ Target - GetActorLocation() };
 	m_pMovementComp->MaxSpeed = Speed;
 	m_pMovementComp->Velocity = DispToTarget.GetUnsafeNormal() * Speed;// m_pMovementComp->bIsHomingProjectile ? DispToTarget.GetUnsafeNormal() * Speed * .125 : DispToTarget.GetUnsafeNormal() * Speed;
 	m_pSource = pSource;
 	m_Damage = Damage;
+	m_MaxFlyDistance = MaxFlyDistance;
 
 	m_pMovementComp->Activate(true);
+
+	
+}
+
+void AProjectileBase::BeginPlay()
+{
+	Super::BeginPlay();
+
+	m_SpawnPoint = GetActorLocation();
 
 
 }

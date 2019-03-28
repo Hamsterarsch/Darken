@@ -61,7 +61,7 @@ protected:
 	UFUNCTION(BlueprintImplementableEvent)
 		void OnDeath();
 	
-	float GetRemainingHealthPercent() const noexcept { return m_CurrentHealthpoints / m_MaxHealthpoints; }
+	float GetRemainingHealthPercent() const  { return m_CurrentHealthpoints / m_MaxHealthpoints; }
 
 
 	UPROPERTY(EditDefaultsOnly)

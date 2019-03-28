@@ -18,24 +18,24 @@ public:
 		
 	FVector Discretize(const FVector &ToConvert, int32 CellOffset = 0, uint32 RingOffset = 0, bool bIsHalfOff = false) const;
 
-	double GetCellWidthAngle(double LowRangeRadius) const noexcept;
+	double GetCellWidthAngle(double LowRangeRadius) const ;
 
-	double GetCellDepth() const noexcept { return m_ComputedCellDepth; }
+	double GetCellDepth() const  { return m_ComputedCellDepth; }
 
-	double GetCellArcWidth() const noexcept { return m_ComputedCellArcWidth; }
+	double GetCellArcWidth() const  { return m_ComputedCellArcWidth; }
 
-	double GetOutmostRadius() const noexcept;
+	double GetOutmostRadius() const ;
 
-	double GetInnermostRadius() const noexcept { return m_RadiusRangeMin; }
+	double GetInnermostRadius() const  { return m_RadiusRangeMin; }
 
-	double GetInnerCellCount() const noexcept { return m_InnermostCellCount; }
+	double GetInnerCellCount() const  { return m_InnermostCellCount; }
 
-	FVector GetCartesianOrigin() const noexcept { return m_Origin; }
+	FVector GetCartesianOrigin() const  { return m_Origin; }
 
-	int32 GetMaxRingCount() const noexcept;
+	int32 GetMaxRingCount() const ;
 
 protected:
-	double ComputeMaxRadiusRange() const noexcept;
+	double ComputeMaxRadiusRange() const ;
 
 	double m_RadiusRangeMin;
 

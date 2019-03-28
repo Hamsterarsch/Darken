@@ -11,7 +11,7 @@ ABuildingBase::ABuildingBase()
 
 }
 
-const UStaticMeshComponent *ABuildingBase::GetBuildingMeshComp() const noexcept
+const UStaticMeshComponent *ABuildingBase::GetBuildingMeshComp() const 
 {
 	return m_pBuildingMeshComp;
 

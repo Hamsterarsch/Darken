@@ -17,7 +17,10 @@ public:
 
 	UPROPERTY(EditAnywhere)
 		class UMaterialInterface *pMaterialBuildingNonPlaceable;
-	
+
+	UPROPERTY(EditAnywhere)
+		class UMaterialInterface *pMaterialHullVisDefault;
+
 	UPROPERTY(EditAnywhere)
 		TSoftClassPtr<class UBarWidgetBase> HealthBarWidgetClass;
 
@@ -42,7 +45,7 @@ public:
 	UFUNCTION(BlueprintCallable)
 		class ARTSMainStructureFactory *GetMainStructureFactory() { return m_pMainStructureFactory; }
 	
-	const FRTSGlobalData &GetGlobalData() const noexcept;
+	const FRTSGlobalData &GetGlobalData() const ;
 	
 	void SetSelectedStructureFactory(class ARTSStructureFactory *pNewFactory);
 
@@ -50,7 +53,9 @@ public:
 
 	virtual void Init() override;
 
-	static URTSGameInstance *s_pInstance;
+	virtual void Shutdown() override;
+
+	static URTSGameInstance *GetInstance()  { return s_pInstance; }
 
 
 protected:
@@ -62,6 +67,10 @@ protected:
 
 	UPROPERTY()
 		class ARTSMainStructureFactory *m_pMainStructureFactory;
-	
-	
+
+
+private:
+	static URTSGameInstance *s_pInstance;
+
+
 };

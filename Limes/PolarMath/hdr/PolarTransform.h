@@ -59,7 +59,7 @@
 
 		}
 
-		bool IsBound() const noexcept
+		bool IsBound() const 
 		{
 			if (m_bIsMember && m_pCaller == nullptr)
 			{
@@ -119,7 +119,7 @@
 
 		}
 
-		bool GetIsEmpty() const noexcept
+		bool GetIsEmpty() const 
 		{
 			return m_InvocationList.empty();
 
@@ -252,7 +252,7 @@ namespace PolarMath
 
 		class CPolarCollider TransformColliderTo(const CPolarTransform &Target, const CPolarCollider &Collider) const;
 
-		SVector2D GetCartesianPos() const noexcept { return m_CartesianPos; }
+		SVector2D GetCartesianPos() const  { return m_CartesianPos; }
 
 		bool operator==(const CPolarTransform Rhs) const;
 

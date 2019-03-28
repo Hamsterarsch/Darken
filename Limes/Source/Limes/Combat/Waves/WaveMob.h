@@ -14,7 +14,7 @@ class LIMES_API AWaveMob : public APawn
 public:
 	AWaveMob();
 
-	float GetAttackRange() const noexcept { return  m_AttackRange; }
+	float GetAttackRange() const  { return  m_AttackRange; }
 
 	float GetCurrentHealth() const;
 

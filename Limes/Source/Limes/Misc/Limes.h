@@ -3,12 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ModuleManager.h"
 
 DECLARE_LOG_CATEGORY_EXTERN(RTS_StructureFactory, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(RTS_StructurePlacement, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(RTS_InputDebug, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(RTS_GameInstance, Log, All);
 DECLARE_LOG_CATEGORY_EXTERN(RTS_CombatSys, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(RTS_Misc, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(RTS_Events, Log, All);
+DECLARE_LOG_CATEGORY_EXTERN(RTS_ResourceSys, Log, All);
 
 template<class T>
 UClass *SafeLoadClassPtr(const TSoftClassPtr<T> &ClassPtr)
@@ -39,3 +43,13 @@ UObject *SafeLoadObjectPtr(const TSoftObjectPtr<T> &ObjectPtr)
 
 
 }
+
+class FLimesGameModule : public IModuleInterface
+{
+public:
+	virtual void StartupModule() override;
+
+	virtual void ShutdownModule() override;
+
+
+};

@@ -21,15 +21,14 @@ public:
 
 	virtual void UnPossessed() override;
 
-	float GetDamagePerHit() const noexcept { return m_DamagePerHit; }
+	float GetDamagePerHit() const  { return m_DamagePerHit; }
 
-	float GetHitsPerSecond() const noexcept { return m_HitsPerSecond; }
+	float GetHitsPerSecond() const  { return m_HitsPerSecond; }
 
-	float GetBeaconDamage() const noexcept { return m_DamageToBeacons; }
+	float GetBeaconDamage() const  { return m_DamageToBeacons; }
 
-
+	
 protected:
-
 	virtual void OnTakeDamage
 	(
 		AActor *pDamagedActor, 

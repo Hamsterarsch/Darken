@@ -51,19 +51,17 @@ public:
 	UFUNCTION(BlueprintCallable)
 		float GetMainHullCenterAngle() const;
 	
-	uint32 GetWidthInCells() const noexcept { return m_ActorWidthInCells; }
+	uint32 GetWidthInCells() const  { return m_ActorWidthInCells; }
 
-	uint32 GetDepthInCells() const noexcept { return m_ActorDepthInCells; }
+	uint32 GetDepthInCells() const  { return m_ActorDepthInCells; }
 
-	class USceneComponent *GetCenteredRoot() const noexcept { return m_pCenteredRoot; }
+	class USceneComponent *GetCenteredRoot() const  { return m_pCenteredRoot; }
 
 
 protected:
 	void SetupHullVisualization();
+	
 
-	UPROPERTY(VisibleDefaultsOnly)
-		UStaticMeshComponent *m_pHullVisualizerPlane;
-		
 	UPROPERTY(EditDefaultsOnly)
 		uint32 m_ActorWidthInCells;
 
@@ -82,14 +80,6 @@ protected:
 	PolarMath::CPolarCollision m_PolarCollision;
 
 	bool m_bIsCollisionInitialized;
-
-
-private:
-	UPROPERTY(EditDefaultsOnly)
-		class UMaterialInterface *m_pHullVisMaterial;
-
-	UPROPERTY(EditDefaultsOnly)
-		class UStaticMesh *m_pHullVisMesh;
 
 	
 };

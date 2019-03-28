@@ -22,7 +22,7 @@ void UHealthComponent::InitializeComponent()
 	Super::InitializeComponent();
 	m_HpCurrent = m_HpMax;
 
-	if (auto *pInst{ URTSGameInstance::s_pInstance })
+	if (auto *pInst{ URTSGameInstance::GetInstance() })
 	{
 		auto *pBarClass{ SafeLoadClassPtr(pInst->GetGlobalData().HealthBarWidgetClass) };
 		if (pBarClass && pBarClass->IsChildOf<UBarWidgetBase>())
@@ -66,7 +66,7 @@ void UHealthComponent::TakeDamage(const float Damage)
 
 }
 
-float UHealthComponent::GetRemainingHpPercent() const noexcept
+float UHealthComponent::GetRemainingHpPercent() const 
 {
 	auto Out{ m_HpCurrent / m_HpMax };
 	return Out < 0 ? 0 : Out;

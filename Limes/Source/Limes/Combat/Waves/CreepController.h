@@ -17,20 +17,28 @@ class LIMES_API ACreepController : public AAIController
 public:
 	ACreepController();
 
+	void Possess(APawn* InPawn) override;
+
 	virtual void Tick(float DeltaTime) override;
 
-	void SetNewAttackTarget(AActor *pNewTarget) noexcept { m_pRetributionTarget = pNewTarget; }
+	void SetNewAttackTarget(AActor *pNewTarget);
+
+	void OnMoveCompleted(FAIRequestID RequestID, const FPathFollowingResult& Result) override;
+
 
 
 private:
 	void UpdateBehavior();
 
-
 	UPROPERTY()
-		AActor *m_pRetributionTarget;
+		TWeakObjectPtr<AActor> m_pRetributionTarget;
 
 	UPROPERTY()
 		float m_LastAttackStamp;
+
+	FAIRequestID m_CurrentMoveID, m_LatestMoveResultID;
+	FPathFollowingResult m_LatestMoveResult;
+	bool m_bLastFrameWasRetribution;
 
 
 };

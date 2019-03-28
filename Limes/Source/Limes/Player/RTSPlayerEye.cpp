@@ -12,6 +12,8 @@
 #include "Misc/Limes.h"
 #include "Building/BuildingPreview.h"
 #include "Misc/RTSGameInstance.h"
+#include "Widgets/BuildingWidgetBase.h"
+#include "Building/BuildingAssignable.h"
 #include "Building/Beacon/RTSMainStructureFactory.h"
 
 
@@ -223,7 +225,7 @@ void ARTSPlayerEye::UpdatePreviewCursorPos()
 
 	//Hit queries --		THIS SHOULD BE REPLACED WITH POLAR COLLISION FUNCTIONS		--
 	FHitResult LayerPlaceableHit;
-	pCtrl->GetHitResultUnderCursor(ARTSPlayerEye::s_CollisionLayerPlacable, false, LayerPlaceableHit);
+	pCtrl->GetHitResultUnderCursor(ARTSPlayerEye::s_CollisionLayerPlaceable, false, LayerPlaceableHit);
 	if (LayerPlaceableHit.IsValidBlockingHit())
 	{
 		auto GridPosition{ m_pCurrentTargetFactory->Discretize(LayerPlaceableHit.Location) };
@@ -259,7 +261,7 @@ void ARTSPlayerEye::UpdateBuildingPreviewProperties()
 
 	//If placement loacation is occluded -- USE POLAR METHODS ---
 	FHitResult LayerNonPlacableHit;
-	pCtrl->GetHitResultUnderCursor(s_CollisionLayerNonPlacable, false, LayerNonPlacableHit);
+	pCtrl->GetHitResultUnderCursor(s_CollisionLayerNonPlaceable, false, LayerNonPlacableHit);
 	if (LayerNonPlacableHit.IsValidBlockingHit() || !pGInst->GetMainStructureFactory()->IsPlacableAtPosition(m_pBuildingPreviewCurrent))
 	{
 		UE_LOG(RTS_InputDebug, VeryVerbose, TEXT("Non-placable cursor hit result: %s"), *LayerNonPlacableHit.GetActor()->GetName());
@@ -305,7 +307,7 @@ void ARTSPlayerEye::DiscardBuildingPreview()
 		m_pBuildingPreviewCurrent->Destroy();
 
 	}
-	//Set to unplacable so a new building is checked in the first frame
+	//Set to unplaceable so a new building is checked in the first frame
 	m_bBuildingPreviewWasPlacable = false;
 
 
@@ -319,7 +321,7 @@ void ARTSPlayerEye::PostInitializeComponents()
 	//m_pViewportClient = GetGameInstance()->GetGameViewportClient();
 	//check(m_pViewportClient);
 	//only on begin play
-	
+
 
 }
 
@@ -338,6 +340,16 @@ void ARTSPlayerEye::Tick(float DeltaTime)
 void ARTSPlayerEye::BeginPlay()
 {
 	Super::BeginPlay();
+
+	if (auto *pClass{ m_BuildingWidgetClass.Get() })
+	{
+		if (auto *pCtrl{ Cast<APlayerController>(GetController()) })
+		{
+			m_pBuildingWidget = CreateWidget<UBuildingWidgetBase>(pCtrl, pClass);
+			m_pBuildingWidget->Hide();
+			m_pBuildingWidget->AddToViewport();
+		}
+	}
 
 
 }
@@ -412,4 +424,48 @@ void ARTSPlayerEye::LeaveSeamlessRotation()
 
 
 }
+
 #pragma endregion
+
+
+void ARTSPlayerEye::ShowMenuItemOnClick()
+{
+	auto *pCtrl{ Cast<APlayerController>(GetController()) };
+	if(!pCtrl)
+	{
+		return;
+	}
+
+	FHitResult Hit{};
+	if(pCtrl->GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, true, Hit))
+	{
+		if(!m_pBuildingWidget)
+		{
+			return;
+		}
+
+		if (auto *pActor{ Hit.Actor.Get() })
+		{
+			UE_LOG(LogTemp, Log, TEXT("%s"), *pActor->GetName());
+			if(pActor->GetClass()->IsChildOf<ABuildingAssignable>())
+			{
+				m_pBuildingWidget->SetTargetBuilding(Cast<ABuildingAssignable>(pActor));
+				m_pBuildingWidget->UpdateBuildingExtension(EBuildingWidgetExtension::Assignable);
+				m_pBuildingWidget->Show();
+			}
+			else if(pActor->GetClass()->IsChildOf<ABuildingBase>())
+			{
+				m_pBuildingWidget->SetTargetBuilding(Cast<ABuildingBase>(pActor));
+				m_pBuildingWidget->UpdateBuildingExtension(EBuildingWidgetExtension::None);
+				m_pBuildingWidget->Show();				
+			}
+			else
+			{
+				m_pBuildingWidget->SetTargetBuilding(nullptr);
+				m_pBuildingWidget->Hide();
+			}
+		}
+	}
+
+
+}

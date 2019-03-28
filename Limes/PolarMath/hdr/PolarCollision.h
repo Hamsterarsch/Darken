@@ -28,21 +28,21 @@ namespace PolarMath
 		
 		bool HasSingleSourceHull() const;
 
-		double GetMainHullDepth() const noexcept;
+		double GetMainHullDepth() const ;
 
-		double GetMainHullRightAngle() const noexcept;
+		double GetMainHullRightAngle() const ;
 
-		double GetMainHullLeftAngle() const noexcept;
+		double GetMainHullLeftAngle() const ;
 
-		double GetMainHullMinRadius() const noexcept;
+		double GetMainHullMinRadius() const ;
 
-		double GetMainHullCenterAngle() const noexcept;
+		double GetMainHullCenterAngle() const ;
 
-		double GetMainHullHalfWidthAngle() const noexcept;
+		double GetMainHullHalfWidthAngle() const ;
 
 		const std::forward_list<CPolarCollider> &GetTempHullReference() const { return m_lSourceHulls; }
 		
-		struct SVector2D GetCartesianCenter() const noexcept;
+		struct SVector2D GetCartesianCenter() const ;
 
 
 

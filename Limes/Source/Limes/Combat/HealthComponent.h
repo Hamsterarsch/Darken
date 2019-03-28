@@ -19,9 +19,9 @@ public:
 	
 	virtual void InitializeComponent() override;
 
-	float GetRemainingHp() const noexcept { return m_HpMax; }
+	float GetRemainingHp() const  { return m_HpMax; }
 
-	float GetRemainingHpPercent() const noexcept;
+	float GetRemainingHpPercent() const ;
 
 	void TakeDamage(float Damage);
 
