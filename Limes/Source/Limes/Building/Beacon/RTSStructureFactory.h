@@ -35,7 +35,7 @@ public:
 
 	FVector Discretize(const FVector &ToConvert) const;
 
-	bool IsPlacableAtPosition(ARadialActorBase *pActor) const;
+	//bool IsPlacableAtPosition(ARadialActorBase *pActor) const;
 
 	void AddChildBuilding(class ARadialActorBase *pNewChild);
 
@@ -65,7 +65,7 @@ public:
 protected:
 	virtual void PostInitializeComponents() override;
 
-	void AddCollisionComponents(ARadialActorBase *pActor) const;
+	//void AddCollisionComponents(ARadialActorBase *pActor) const;
 
 	void SetupGridVisualization();
 

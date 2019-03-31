@@ -32,7 +32,7 @@ void ARTSStructureFactory::InstantiatePreviewBuilding(const TSoftClassPtr<class 
 {
 	UE_LOG(RTS_StructureFactory, Log, TEXT("Instantiating preview building: %s"), *TypeToPreview.GetAssetName());
 	
-	auto *pNewPreview{ ABuildingPreview::SpawnNewBuildingPreview(GetWorld(), TypeToPreview) };
+	auto *pNewPreview{ ABuildingPreview::SpawnNewBuildingPreview(GetWorld(), TypeToPreview, this) };
 	if (!pNewPreview)
 	{
 		UE_LOG(RTS_StructureFactory, Error, TEXT("Unable to instantiate preview building"));
@@ -66,11 +66,10 @@ bool ARTSStructureFactory::TryCommitPreviewBuilding(ABuildingPreview *pPreviewBu
 
 		auto *pBuildingActor = Cast<ARadialActorBase>(pActor);
 		
-		pPreviewBuilding->InitMinimumCollision(this);
 		if (HasIntersectionsWithChildBuildings(pPreviewBuilding))
 		{
 			pActor->Destroy();
-			pPreviewBuilding->ResetPolarCollision();
+			pPreviewBuilding->RefreshPolarCollision();
 			return false;
 		}
 		else
@@ -101,6 +100,7 @@ FVector ARTSStructureFactory::Discretize(const FVector &ToConvert) const
 
 }
 
+/*
 bool ARTSStructureFactory::IsPlacableAtPosition(ARadialActorBase *pActor) const
 {
 	auto SymmetryOffset = FMath::FloorToInt(pActor->GetWidthInCells() * .5);
@@ -119,7 +119,7 @@ bool ARTSStructureFactory::IsPlacableAtPosition(ARadialActorBase *pActor) const
 	return !bBlockingHit;
 
 
-}
+}*/
 
 void ARTSStructureFactory::AddChildBuilding(ARadialActorBase *pNewChild)
 {
@@ -199,6 +199,7 @@ void ARTSStructureFactory::PostInitializeComponents()
 
 }
 
+/*
 void ARTSStructureFactory::AddCollisionComponents(ARadialActorBase *pActor) const
 {
 	auto SymmetryOffset = FMath::FloorToInt(pActor->GetWidthInCells() * .5);
@@ -228,7 +229,7 @@ void ARTSStructureFactory::AddCollisionComponents(ARadialActorBase *pActor) cons
 	}
 
 
-}
+}*/
 
 void ARTSStructureFactory::SetupGridVisualization()
 {

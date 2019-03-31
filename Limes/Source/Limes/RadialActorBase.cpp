@@ -37,7 +37,7 @@ void ARadialActorBase::InitMinimumCollision(ARTSStructureFactory* pOwningFactory
 	m_pOwningFactory = pOwningFactory;
 	auto DiscretizedPos{ GetActorLocation() };
 
-	DrawDebugCrosshairs(GetWorld(), DiscretizedPos, FRotator::ZeroRotator, 50, FColor::Red, true, 100);
+	//DrawDebugCrosshairs(GetWorld(), DiscretizedPos, FRotator::ZeroRotator, 50, FColor::Red, true, 100);
 
 	auto HullDepth{ m_pOwningFactory->GetCellDepth() * GetDepthInCells() };
 	m_pCenteredRoot->SetRelativeLocation({ static_cast<float>(-HullDepth) * .5f, 0, 0 });
@@ -64,9 +64,6 @@ void ARadialActorBase::InitExpandedCollision(ARTSStructureFactory* pOwningFactor
 {
 	m_pOwningFactory = pOwningFactory;
 	auto DiscretizedPos{ GetActorLocation() };
-
-	auto HullDepth{ m_pOwningFactory->GetCellDepth() * GetDepthInCells() };
-	m_pCenteredRoot->SetRelativeLocation({ static_cast<float>(-HullDepth) * .5f, 0, 0 });
 
 	auto PolarSystemCartesianOrigin{ m_pOwningFactory->GetCenteredRootLocation() };
 	//relative to owning factory
@@ -238,6 +235,8 @@ float ARadialActorBase::GetMainHullCenterAngle() const
 
 void ARadialActorBase::SetupHullVisualization()
 {	
+	ResetHullVisualization();
+
 	auto &HullList{ m_PolarCollision.GetTempHullReference() };
 
 	auto ScaleBase{ (m_ActorDepthInCells > m_ActorWidthInCells ? m_ActorDepthInCells : m_ActorWidthInCells) * 2 };
@@ -286,6 +285,37 @@ void ARadialActorBase::SetupHullVisualization()
 			   
 	}
 
+
+}
+
+void ARadialActorBase::CenterCenteredRoot()
+{
+	const auto HullDepth{ m_pOwningFactory->GetCellDepth() * GetDepthInCells() };
+	m_pCenteredRoot->SetRelativeLocation({ static_cast<float>(-HullDepth) * .5f, 0, 0 });
+
+
+}
+
+void ARadialActorBase::OnCollisionInitialized()
+{
+	CenterCenteredRoot();
+
+
+}
+
+void ARadialActorBase::ResetHullVisualization()
+{
+	if(m_apHullVisPlanes.Num() <= 0)
+	{
+		return;
+	}
+
+	for(auto &&pHullPlane : m_apHullVisPlanes)
+	{
+		pHullPlane->DestroyComponent();
+	}
+	m_apHullVisPlanes.Empty();
+	
 
 }
 

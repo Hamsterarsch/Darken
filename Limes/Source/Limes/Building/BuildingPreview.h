@@ -13,7 +13,7 @@ class LIMES_API ABuildingPreview : public ABuildingBase
 	GENERATED_BODY()
 	
 public:
-	static ABuildingPreview *SpawnNewBuildingPreview(class UWorld *pWorld, const TSoftClassPtr<ABuildingBase> &PreviewedBuilding);
+	static ABuildingPreview *SpawnNewBuildingPreview(class UWorld *pWorld, const TSoftClassPtr<ABuildingBase> &PreviewedBuilding, class ARTSStructureFactory *pOwningFactory);
 
 	//todo: recheck for protected ctors
 	ABuildingPreview();
@@ -25,7 +25,7 @@ public:
 
 	void NotifyPlacable();
 
-	void ResetPolarCollision();
+	void RefreshPolarCollision();
 
 
 protected:

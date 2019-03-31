@@ -33,7 +33,8 @@ ARTSPlayerEye::ARTSPlayerEye() :
 	m_ZoomTargetDist{ 300 },
 	m_bBuildingPreviewWasPlacable{ false },
 	m_CameraState{ this },
-	m_PlacementState{ this }
+	m_PlacementState{ this },
+	m_CursorLastPosition{ 0, 0, 0}
 {
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("Root")));
 	GetMovementComponent()->SetUpdatedComponent(GetRootComponent());
@@ -230,6 +231,16 @@ void ARTSPlayerEye::UpdatePreviewCursorPos()
 	{
 		auto GridPosition{ m_pCurrentTargetFactory->Discretize(LayerPlaceableHit.Location) };
 		m_pCursorRoot->SetWorldLocation(GridPosition);
+
+		if(GridPosition != m_CursorLastPosition)
+		{
+			if(m_pBuildingPreviewCurrent)
+			{
+				m_pBuildingPreviewCurrent->RefreshPolarCollision();
+			}
+			m_CursorLastPosition = GridPosition;
+		}
+
 	}
 
 
@@ -259,15 +270,13 @@ void ARTSPlayerEye::UpdateBuildingPreviewProperties()
 	auto NewRot{ (pSelectedFactory->GetCenteredRootLocation() - m_pBuildingPreviewCurrent->GetActorLocation()).GetSafeNormal2D().ToOrientationQuat() };
 	m_pBuildingPreviewCurrent->SetActorRotation(NewRot);
 
-	//If placement loacation is occluded -- USE POLAR METHODS ---
-	FHitResult LayerNonPlacableHit;
-	pCtrl->GetHitResultUnderCursor(s_CollisionLayerNonPlaceable, false, LayerNonPlacableHit);
-	if (LayerNonPlacableHit.IsValidBlockingHit() || !pGInst->GetMainStructureFactory()->IsPlacableAtPosition(m_pBuildingPreviewCurrent))
+	//If placement loacation is occluded
+	if (pGInst->GetMainStructureFactory()->HasIntersectionsWithChildBuildings(m_pBuildingPreviewCurrent))
 	{
-		UE_LOG(RTS_InputDebug, VeryVerbose, TEXT("Non-placable cursor hit result: %s"), *LayerNonPlacableHit.GetActor()->GetName());
 		//first occluded frame
 		if (m_bBuildingPreviewWasPlacable)
 		{
+			UE_LOG(RTS_InputDebug, Log, TEXT("Building switches to non-placable mode"));
 			//defer feedback to actor
 			m_pBuildingPreviewCurrent->NotifyNonPlacable();
 			m_bBuildingPreviewWasPlacable = false;
@@ -280,6 +289,7 @@ void ARTSPlayerEye::UpdateBuildingPreviewProperties()
 		//first unoccluded frame
 		if (!m_bBuildingPreviewWasPlacable)
 		{
+			UE_LOG(RTS_InputDebug, Log, TEXT("Building switches to placable mode"));
 			//defer feedback to actor
 			m_pBuildingPreviewCurrent->NotifyPlacable();
 			m_bBuildingPreviewWasPlacable = true;

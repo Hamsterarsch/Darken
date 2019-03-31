@@ -28,8 +28,6 @@ public:
 
 	bool HasIntersectionsWith(const PolarMath::CPolarCollider &HullToTest, PolarMath::CPolarCollider *out_pFirstHit = nullptr) const;
 
-	virtual void OnCollisionInitialized() {};
-
 	UFUNCTION(BlueprintCallable)
 		float GetMainHullDepth() const;
 
@@ -60,7 +58,13 @@ public:
 
 protected:
 	void SetupHullVisualization();
-	
+
+	void CenterCenteredRoot();
+
+	virtual void OnCollisionInitialized();
+
+	void ResetHullVisualization();
+
 
 	UPROPERTY(EditDefaultsOnly)
 		uint32 m_ActorWidthInCells;

@@ -14,7 +14,7 @@
 
 //Public--------------------
 
-ABuildingPreview* ABuildingPreview::SpawnNewBuildingPreview(UWorld *pWorld, const TSoftClassPtr<ABuildingBase> &PreviewedBuilding)
+ABuildingPreview* ABuildingPreview::SpawnNewBuildingPreview(UWorld *pWorld, const TSoftClassPtr<ABuildingBase> &PreviewedBuilding, ARTSStructureFactory *pOwningFactory)
 {
 	auto *pPreviewClass{ SafeLoadClassPtr(PreviewedBuilding) };
 	if( !pPreviewClass )
@@ -42,7 +42,9 @@ ABuildingPreview* ABuildingPreview::SpawnNewBuildingPreview(UWorld *pWorld, cons
 	pOut->m_ActorWidthInCells = pDefaultObject->GetWidthInCells();
 	pOut->m_ActorDepthInCells = pDefaultObject->GetDepthInCells();
 	UGameplayStatics::FinishSpawningActor(pOut, FTransform::Identity);
-	   
+
+	pOut->InitMinimumCollision(pOwningFactory);
+
 	return pOut;
 
 
@@ -86,21 +88,11 @@ void ABuildingPreview::NotifyPlacable()
 
 }
 
-void ABuildingPreview::ResetPolarCollision()
+void ABuildingPreview::RefreshPolarCollision()
 {
 	m_bIsCollisionInitialized = false;
-
-	for (auto &&pComp : m_apHullVisPlanes)
-	{
-		if (!pComp)
-		{
-			continue;
-		}
-
-		pComp->DestroyComponent();
-
-	}
-	m_apHullVisPlanes.Empty();
+	ResetHullVisualization();
+	InitMinimumCollision(m_pOwningFactory);
 
 
 }

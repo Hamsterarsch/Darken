@@ -184,6 +184,7 @@ protected:
 	float m_ZoomTargetPitch;
 	int32 m_ZoomIndex;
 	FVector m_SeamlessRotationPrePos;
+	FVector m_CursorLastPosition;
 
 	CCameraStateMachine m_CameraState;
 	CPlacementStateMachine m_PlacementState;
