@@ -118,7 +118,7 @@ protected:
 	virtual void BeginPlay() override;
 
 
-	virtual void SetupPlayerInputComponent(UInputComponent *InputComponent) override;
+	virtual void SetupPlayerInputComponent(UInputComponent *pInputComponent) override;
 
 	void ActionSelectStart();
 

@@ -9,8 +9,8 @@ CPlacementStateMachine::CPlacementStateMachine() :
 }
 
 CPlacementStateMachine::CPlacementStateMachine(class ARTSPlayerEye *pOwner) :
-	m_pOwningEye{ pOwner },
-	m_pCurrentState{ std::make_unique<CPlacementState_Idle>() }
+	m_pCurrentState{ std::make_unique<CPlacementState_Idle>() },
+	m_pOwningEye{ pOwner }
 {
 }
 

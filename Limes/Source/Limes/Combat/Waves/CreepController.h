@@ -17,7 +17,7 @@ class LIMES_API ACreepController : public AAIController
 public:
 	ACreepController();
 
-	void Possess(APawn* InPawn) override;
+	void OnPossess(APawn* InPawn) override;
 
 	virtual void Tick(float DeltaTime) override;
 

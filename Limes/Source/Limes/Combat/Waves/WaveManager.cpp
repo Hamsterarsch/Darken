@@ -9,9 +9,9 @@
 
 
 AWaveManager::AWaveManager() :
-	m_CurrentEventIndex{ 0 },
 	m_SpawnHeight{ 50 },
 	m_MobSpacing{ 200 },
+	m_CurrentEventIndex{ 0 },
 	m_StampLastEventCompletion{ 0 }
 {
 	PrimaryActorTick.bCanEverTick = true;

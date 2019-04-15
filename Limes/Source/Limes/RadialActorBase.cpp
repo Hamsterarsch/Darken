@@ -12,9 +12,9 @@
 //Public------------
 
 ARadialActorBase::ARadialActorBase() :
-	m_bIsCollisionInitialized{ false },
+	m_ActorWidthInCells{ 3 },
 	m_ActorDepthInCells{ 2 },
-	m_ActorWidthInCells{ 3 }
+	m_bIsCollisionInitialized{ false }
 {	
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("PolarRoot")));
 

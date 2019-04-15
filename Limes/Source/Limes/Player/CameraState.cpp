@@ -10,8 +10,8 @@ CCameraStateMachine::CCameraStateMachine() :
 }
 
 CCameraStateMachine::CCameraStateMachine(class ARTSPlayerEye *pOwner) :
-	m_pOwningEye{ pOwner },
-	m_pCurrentState{ std::make_unique<CCameraState_Idle>() }
+	m_pCurrentState{ std::make_unique<CCameraState_Idle>() },
+	m_pOwningEye{ pOwner }
 {
 }
 

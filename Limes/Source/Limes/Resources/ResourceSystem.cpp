@@ -10,10 +10,10 @@
 int32 FCitizen::s_TimesInstantiated{ 0 };
 
 FCitizen::FCitizen() :
-	LastEatTime{ -1 },
+	pPawn{ nullptr },
 	Type{ ECitizenType::Commoner },
-	InstanceId{ s_TimesInstantiated },
-	pPawn{ nullptr }
+	LastEatTime{ -1 },
+	InstanceId{ s_TimesInstantiated }
 {	
 	++s_TimesInstantiated;
 

@@ -10,10 +10,10 @@
 
 
 SpaceDiscretizer::SpaceDiscretizer(FVector Origin, float RadiusMin, int32 InnerCellCount, int32 DepthFactor, int32 MaxRingCount) :
-	m_Origin{ std::move(Origin) },
 	m_RadiusRangeMin{ RadiusMin },
+	m_MaxRingCount{ MaxRingCount },
 	m_InnermostCellCount{ InnerCellCount },
-	m_MaxRingCount{ MaxRingCount }
+	m_Origin{ std::move(Origin) }
 {
 	m_ComputedCellArcWidth = (PI * 2 * m_RadiusRangeMin) / m_InnermostCellCount;
 
@@ -31,11 +31,11 @@ SpaceDiscretizer::SpaceDiscretizer(FVector Origin, float RadiusMin, int32 InnerC
 }
 
 SpaceDiscretizer::SpaceDiscretizer(FVector Origin, double CellArcWidth, double CellDepth, int32 MaxRingCount, int32 InnerCellCount) :
-	m_Origin{ std::move(Origin) },
+	m_MaxRingCount{ MaxRingCount },
 	m_InnermostCellCount{ InnerCellCount },
-	m_ComputedCellDepth{ CellDepth },
+	m_Origin{ std::move(Origin) },
 	m_ComputedCellArcWidth{ CellArcWidth },
-	m_MaxRingCount{ MaxRingCount }
+	m_ComputedCellDepth{ CellDepth }
 {
 	m_RadiusRangeMin = ((m_ComputedCellArcWidth * m_InnermostCellCount) / (2 * PI));	
 	m_ComputedMaxRadiusRange = ComputeMaxRadiusRange();

@@ -16,9 +16,9 @@ ACreepController::ACreepController() :
 
 }
 
-void ACreepController::Possess(APawn* InPawn)
+void ACreepController::OnPossess(APawn* InPawn)
 {
-	Super::Possess(InPawn);
+	Super::OnPossess(InPawn);
 
 	auto *pPawn{ Cast<ACreep>(GetPawn()) };
 	if (!pPawn)

@@ -6,9 +6,9 @@
 
 ACreep::ACreep() :
 	m_DamagePerHit{ 10 },
-	m_pController{ nullptr },
 	m_HitsPerSecond{ 1 },
-	m_DamageToBeacons{ 10 }
+	m_DamageToBeacons{ 10 },
+	m_pController{ nullptr }
 { 	
 	PrimaryActorTick.bCanEverTick = true;
 

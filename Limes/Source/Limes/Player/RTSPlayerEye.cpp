@@ -25,16 +25,16 @@ const FName ARTSPlayerEye::s_AxisMouseY{ TEXT("MouseY") };
 
 ARTSPlayerEye::ARTSPlayerEye() :
 	m_MouseShuffleSpeed{ 1 },
-	m_MouseTurnSpeed{ 1 },
 	m_KeyShuffleSpeed{ 1 },
+	m_MouseTurnSpeed{ 1 },
 	m_CameraMaxPitch{ 90 },
 	m_CameraMinPitch{ 0 },
-	m_ZoomTargetPitch{ -30 },
-	m_ZoomTargetDist{ 300 },
 	m_bBuildingPreviewWasPlacable{ false },
+	m_ZoomTargetDist{ 300 },
+	m_ZoomTargetPitch{ -30 },
+	m_CursorLastPosition{ 0, 0, 0},
 	m_CameraState{ this },
-	m_PlacementState{ this },
-	m_CursorLastPosition{ 0, 0, 0}
+	m_PlacementState{ this }
 {
 	SetRootComponent(CreateDefaultSubobject<USceneComponent>(TEXT("Root")));
 	GetMovementComponent()->SetUpdatedComponent(GetRootComponent());
@@ -365,29 +365,29 @@ void ARTSPlayerEye::BeginPlay()
 }
 
 #pragma region Input
-void ARTSPlayerEye::SetupPlayerInputComponent(UInputComponent *InputComponent)
+void ARTSPlayerEye::SetupPlayerInputComponent(UInputComponent *pInputComponent)
 {
-	//Super::SetupPlayerInputComponent(InputComponent);
+	//Super::SetupPlayerInputComponent(pInputComponent);
 
-	InputComponent->BindAxis(s_AxisMouseX);
-	InputComponent->BindAxis(s_AxisMouseY);
+	pInputComponent->BindAxis(s_AxisMouseX);
+	pInputComponent->BindAxis(s_AxisMouseY);
 
-	InputComponent->BindAxis(TEXT("MoveX"), this, &ARTSPlayerEye::AddRightMovement);
-	InputComponent->BindAxis(TEXT("MoveY"), this, &ARTSPlayerEye::AddForwardMovement);
+	pInputComponent->BindAxis(TEXT("MoveX"), this, &ARTSPlayerEye::AddRightMovement);
+	pInputComponent->BindAxis(TEXT("MoveY"), this, &ARTSPlayerEye::AddForwardMovement);
 
-	InputComponent->BindAxis(TEXT("RotateCamera"), this, &ARTSPlayerEye::AddCameraYaw);
+	pInputComponent->BindAxis(TEXT("RotateCamera"), this, &ARTSPlayerEye::AddCameraYaw);
 
-	InputComponent->BindAction(TEXT("Select"), IE_Pressed, this, &ARTSPlayerEye::ActionSelectStart);
-	InputComponent->BindAction(TEXT("Select"), IE_Released, this, &ARTSPlayerEye::ActionSelectEnd);
+	pInputComponent->BindAction(TEXT("Select"), IE_Pressed, this, &ARTSPlayerEye::ActionSelectStart);
+	pInputComponent->BindAction(TEXT("Select"), IE_Released, this, &ARTSPlayerEye::ActionSelectEnd);
 
-	InputComponent->BindAction(TEXT("ContextAction"), IE_Pressed, this, &ARTSPlayerEye::ActionContextStart);
-	InputComponent->BindAction(TEXT("ContextAction"), IE_Released, this, &ARTSPlayerEye::ActionContextEnd);
+	pInputComponent->BindAction(TEXT("ContextAction"), IE_Pressed, this, &ARTSPlayerEye::ActionContextStart);
+	pInputComponent->BindAction(TEXT("ContextAction"), IE_Released, this, &ARTSPlayerEye::ActionContextEnd);
 
-	InputComponent->BindAction(TEXT("SeamlessRotate"), IE_Pressed, this, &ARTSPlayerEye::EnterSeamlessRotation);
-	InputComponent->BindAction(TEXT("SeamlessRotate"), IE_Released, this, &ARTSPlayerEye::LeaveSeamlessRotation);
+	pInputComponent->BindAction(TEXT("SeamlessRotate"), IE_Pressed, this, &ARTSPlayerEye::EnterSeamlessRotation);
+	pInputComponent->BindAction(TEXT("SeamlessRotate"), IE_Released, this, &ARTSPlayerEye::LeaveSeamlessRotation);
 	
-	InputComponent->BindAction(TEXT("ZoomOut"), IE_Pressed, this, &ARTSPlayerEye::ZoomOut);
-	InputComponent->BindAction(TEXT("ZoomIn"), IE_Pressed, this, &ARTSPlayerEye::ZoomIn);
+	pInputComponent->BindAction(TEXT("ZoomOut"), IE_Pressed, this, &ARTSPlayerEye::ZoomOut);
+	pInputComponent->BindAction(TEXT("ZoomIn"), IE_Pressed, this, &ARTSPlayerEye::ZoomIn);
 
 }
 
