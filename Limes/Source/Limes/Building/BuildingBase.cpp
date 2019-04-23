@@ -2,6 +2,7 @@
 
 #include "BuildingBase.h"
 #include "Components/StaticMeshComponent.h"
+#include "Building/Beacon/RTSStructureFactory.h"
 
 ABuildingBase::ABuildingBase()
 {
@@ -15,5 +16,12 @@ const UStaticMeshComponent *ABuildingBase::GetBuildingMeshComp() const
 {
 	return m_pBuildingMeshComp;
 
+
+}
+
+void ABuildingBase::RefreshIlluminationState()
+{
+	m_bIsIlluminated = m_pOwningFactory->IsBuildingIlluminated(this);
+	
 
 }

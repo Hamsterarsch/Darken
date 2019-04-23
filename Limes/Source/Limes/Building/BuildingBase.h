@@ -17,10 +17,14 @@ public:
 
 	const UStaticMeshComponent *GetBuildingMeshComp() const ;
 
+	void RefreshIlluminationState();
+
 
 protected:
 	UPROPERTY(VisibleDefaultsOnly)
 		class UStaticMeshComponent *m_pBuildingMeshComp;
-	
+
+	bool m_bIsIlluminated;
+
 	
 };

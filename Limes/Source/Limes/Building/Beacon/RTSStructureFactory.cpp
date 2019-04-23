@@ -9,12 +9,14 @@
 #include "Components/BoxComponent.h"
 #include "Building/BuildingBase.h"
 #include "Player/RTSPlayerEye.h"
+#include "RTSSideBeacon.h"
 
 constexpr auto ECCPlacable = ECC_GameTraceChannel1;
 constexpr auto ECCNonPlacable = ECC_GameTraceChannel2;
 
 ARTSStructureFactory::ARTSStructureFactory() :
-	m_InnermostCellcount{ 30 }
+	m_InnermostCellcount{ 30 },
+	m_IlluminatedRingsCount{ 9 }
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -47,7 +49,7 @@ void ARTSStructureFactory::InstantiatePreviewBuilding(const TSoftClassPtr<class 
 	}
 	else
 	{
-		UE_LOG(RTS_StructureFactory, Error, TEXT("Unable to notify rts player"));
+		UE_LOG(RTS_StructureFactory, Error, TEXT("Unable to notify rts player about new preview building"));
 		pNewPreview->Destroy();
 
 	}
@@ -60,33 +62,32 @@ bool ARTSStructureFactory::TryCommitPreviewBuilding(ABuildingPreview *pPreviewBu
 	//todo: game instance updates (gameplay)
 
 	if (auto *pClass = pPreviewBuilding->GetPreviewedClass())
-	{
-		auto Transform = pPreviewBuilding->GetActorTransform();
-		auto *pActor = GetWorld()->SpawnActor(pClass, &Transform);
-
-		auto *pBuildingActor = Cast<ARadialActorBase>(pActor);
-		
+	{		
 		if (HasIntersectionsWithChildBuildings(pPreviewBuilding))
 		{
-			pActor->Destroy();
 			pPreviewBuilding->RefreshPolarCollision();
 			return false;
 		}
 		else
 		{
+			if(!IsBuildingIlluminated(pPreviewBuilding))
+			{
+				pPreviewBuilding->RefreshPolarCollision();
+				return false;
+			}
+
+			auto Transform{ pPreviewBuilding->GetActorTransform() };
+			auto *pActor{ GetWorld()->SpawnActor(pClass, &Transform) };
+			auto *pBuildingActor{ Cast<ABuildingBase>(pActor) };
+
 			UE_LOG(RTS_StructureFactory, Log, TEXT("Commiting preview building %s"), *pPreviewBuilding->GetName());
-			//AddCollisionComponents(pRadialActor);
-			//pActor->DrawDebugComponents();
+
 			pBuildingActor->InitExpandedCollision(this);
-			AddChildBuilding(pBuildingActor);
+			AddChildBuilding(pBuildingActor);						
 			pPreviewBuilding->Destroy();
+
 			return true;
-
-
 		}
-
-		
-
 	}	
 	UE_LOG(RTS_StructureFactory, Error, TEXT("Could not commit preview building"));
 	return false;
@@ -98,39 +99,39 @@ FVector ARTSStructureFactory::Discretize(const FVector &ToConvert) const
 {
 	return m_SpaceDiscretizer.Discretize(ToConvert);
 
+
 }
 
-/*
-bool ARTSStructureFactory::IsPlacableAtPosition(ARadialActorBase *pActor) const
-{
-	auto SymmetryOffset = FMath::FloorToInt(pActor->GetWidthInCells() * .5);
-	bool bBlockingHit{ false };
-
-	for (uint32 DepthOffset{ 0 }; DepthOffset < pActor->GetDepthInCells(); ++DepthOffset)
-	{
-		auto LowBorder = m_SpaceDiscretizer.Discretize(pActor->GetActorLocation(), -SymmetryOffset, DepthOffset);
-		auto HighBorder = m_SpaceDiscretizer.Discretize(pActor->GetActorLocation(), SymmetryOffset, DepthOffset);
-
-		bBlockingHit |= GetWorld()->LineTraceTestByChannel(LowBorder, HighBorder, ECCNonPlacable);
-
-
-	}
-
-	return !bBlockingHit;
-
-
-}*/
-
-void ARTSStructureFactory::AddChildBuilding(ARadialActorBase *pNewChild)
+void ARTSStructureFactory::AddChildBuilding(ABuildingBase *pNewChild)
 {
 	m_apChildBuildings.AddUnique(pNewChild);
+		
+	if (auto *pAsBeacon{ Cast<ARTSSideBeacon>(pNewChild) })
+	{
+		m_apSideBeacons.AddUnique(pAsBeacon);
+		for(auto *pBuilding : m_apChildBuildings)
+		{
+			pBuilding->RefreshIlluminationState();
+
+		}
+	}
 
 
 }
 
-void ARTSStructureFactory::RemoveChildBuilding(ARadialActorBase *pChildToRemove)
+void ARTSStructureFactory::RemoveChildBuilding(ABuildingBase *pChildToRemove)
 {
 	m_apChildBuildings.Remove(pChildToRemove);
+
+	if (auto *pAsBeacon{ Cast<ARTSSideBeacon>(pChildToRemove) })
+	{
+		m_apSideBeacons.Remove(pAsBeacon);
+		for (auto *pBuilding : m_apChildBuildings)
+		{
+			pBuilding->RefreshIlluminationState();
+		
+		}
+	}
 
 
 }
@@ -143,8 +144,7 @@ bool ARTSStructureFactory::HasIntersectionsWithChildBuildings(class ARadialActor
 		{
 			return true;
 		}
-	
-	
+		
 	}
 	return false;
 
@@ -189,6 +189,37 @@ double ARTSStructureFactory::GetCellWidthAngle(double LowRangeRadius) const
 
 
 //Protected--------------------
+
+float ARTSStructureFactory::GetIlluminationRadius() const
+{
+	return static_cast<float>(m_SpaceDiscretizer.GetCellDepth() * m_IlluminatedRingsCount + GetInnermostRingRadius());
+
+}
+
+bool ARTSStructureFactory::IsBuildingIlluminated(const ABuildingBase* pBuilding) const
+{
+	if(!pBuilding)
+	{
+		return false;
+	}
+
+	auto BuildingCenterPos{ pBuilding->GetCenteredRoot()->GetComponentLocation() };
+	auto DistToThis{ FVector::Dist2D(BuildingCenterPos, GetCenteredRootLocation()) };
+
+	bool bIsIlluminated{ DistToThis <= GetIlluminationRadius() };
+	for(const auto *pBeacon : m_apSideBeacons)
+	{
+		if(!pBeacon)
+		{
+			continue;
+		}
+	 	bIsIlluminated |= FVector::Dist2D(BuildingCenterPos, pBeacon->GetCenteredRoot()->GetComponentLocation()) <= pBeacon->GetIlluminationRadius();
+		
+	}
+	return bIsIlluminated;
+
+
+}
 
 void ARTSStructureFactory::PostInitializeComponents()
 {

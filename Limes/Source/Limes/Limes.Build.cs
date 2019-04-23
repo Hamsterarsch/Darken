@@ -18,7 +18,10 @@ public class Limes : ModuleRules
 
 		PrivateDependencyModuleNames.AddRange(new string[] { "AIModule" });
         PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
-
+		
+		PrivateDependencyModuleNames.AddRange(new string[] { "GameAnalytics" });
+		PrivateIncludePathModuleNames.AddRange(new string[] { "GameAnalytics"});
+		
         //Polar math lib
         PublicAdditionalLibraries.Add( Path.GetFullPath(Path.Combine(ModuleDirectory, "../../Binaries/Win64/PolarMath.lib")) );
         PublicIncludePaths.Add( Path.Combine(ModuleDirectory, "../../PolarMath/hdr/") );

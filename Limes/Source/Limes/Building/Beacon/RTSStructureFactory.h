@@ -10,7 +10,6 @@
 #include "RTSStructureFactory.generated.h"
 
 
-
 UENUM(BlueprintType)
 enum class EBuildingTypes : uint8
 {
@@ -37,9 +36,9 @@ public:
 
 	//bool IsPlacableAtPosition(ARadialActorBase *pActor) const;
 
-	void AddChildBuilding(class ARadialActorBase *pNewChild);
+	void AddChildBuilding(class ABuildingBase *pNewChild);
 
-	void RemoveChildBuilding(class ARadialActorBase *pChildToRemove);
+	void RemoveChildBuilding(class ABuildingBase *pChildToRemove);
 
 	bool HasIntersectionsWithChildBuildings(class ARadialActorBase *pBuildingToTest) const;
 
@@ -61,6 +60,10 @@ public:
 
 	double GetInnermostRingRadius() const  { return m_SpaceDiscretizer.GetInnermostRadius(); }
 
+	float GetIlluminationRadius() const;
+
+	bool IsBuildingIlluminated(const ABuildingBase *pBuilding) const;
+
 
 protected:
 	virtual void PostInitializeComponents() override;
@@ -79,9 +82,15 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Factory|Grid")
 		int32 m_MaxRingCount;
 
+	UPROPERTY(EditDefaultsOnly)
+		int32 m_IlluminatedRingsCount;
+
 	UPROPERTY()
-		TArray<ARadialActorBase *> m_apChildBuildings;
-		
+		TArray<ABuildingBase *> m_apChildBuildings;
+
+	UPROPERTY()
+		TArray<class ARTSSideBeacon *> m_apSideBeacons;
+	
 	SpaceDiscretizer m_SpaceDiscretizer;
 	   
 
